@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>石のささやき AI鑑定 & 図鑑</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="container">
+        <header>
+            <h1>🔮 石のささやき</h1>
+            <p class="subtitle">〜 あなたの魂に響く、一石を 〜</p>
+        </header>
+
+        <main>
+            <div class="input-group">
+                <textarea id="user-input" placeholder="悩みを入れて「鑑定」するか、石の名前を入れて「図鑑」としてお使いください..."></textarea>
+                <div class="button-container">
+                    <button onclick="execute('diagnosis')" class="btn-diag">石の声を聴く</button>
+                    <button onclick="execute('dictionary')" class="btn-dict">石図鑑で調べる</button>
+                </div>
+            </div>
+
+            <div id="result-area" class="result-area"></div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
