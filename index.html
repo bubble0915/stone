@@ -5,57 +5,48 @@
     <title>AI天然石鑑定士</title>
 </head>
 <body style="background-color: #16213e; color: white; text-align: center; padding-top: 50px; font-family: sans-serif;">
-    
-    <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px; display: inline-block; min-width: 300px;">
+    <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px; display: inline-block;">
         <h1>🔮 AI天然石鑑定所</h1>
-        <p>石の名前や悩みを入力してください</p>
-        
-        <input type="text" id="stoneInput" placeholder="例：水晶、金運を上げたい" style="padding: 10px; width: 200px; border-radius: 5px; border: none;">
-        <button id="execBtn" style="padding: 10px 20px; border-radius: 5px; background: #e94560; color: white; border: none; cursor: pointer; font-weight: bold;">石の声を聴く</button>
-        
-        <div id="resultArea" style="margin-top: 30px; color: #00ffcc; line-height: 1.6; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
-            ※ここに鑑定結果が表示されます
-        </div>
+        <input type="text" id="stoneInput" value="水晶" style="padding: 10px;">
+        <button id="execBtn" style="padding: 10px 20px; background: #e94560; color: white; border: none; cursor: pointer;">石の声を聴く</button>
+        <div id="resultArea" style="margin-top: 30px; color: #00ffcc; max-width: 400px;">※鑑定結果待ち</div>
     </div>
 
     <script>
-        // 【重要】ここに新しいプロジェクト(...2896)のAPIキーを正確に貼ってください
         const KEY = 'AIzaSyD6zFfwmA41hvoEHwE9rCjjwfqh6eiWIbY'; 
 
         document.getElementById('execBtn').onclick = async function() {
             const resArea = document.getElementById('resultArea');
-            const input = document.getElementById('stoneInput').value.trim();
-            
-            if (!input) {
-                alert('何か入力してください');
-                return;
-            }
-
-            resArea.innerHTML = '✨ 石の記憶にアクセス中...';
-
-            // 最新の無料枠用URL (v1beta)
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${KEY}`;
+            const input = document.getElementById('stoneInput').value;
+            resArea.innerHTML = '✨ 接続可能な石の精霊を探しています...';
 
             try {
-                const response = await fetch(url, {
+                // 1. 今使えるモデルをリストアップする
+                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${KEY}`);
+                const listData = await listRes.json();
+                
+                // 2. 鑑定ができるモデル（gemini-1.5-flashなど）を自動で見つける
+                const target = listData.models.find(m => m.supportedGenerationMethods.includes('generateContent') && m.name.includes('gemini-1.5'));
+                
+                if (!target) throw new Error("利用可能なモデルが見つかりません。APIの有効化を確認してください。");
+                
+                resArea.innerHTML = `✨ ${target.displayName} で鑑定中...`;
+
+                // 3. 見つけたモデル名で鑑定を実行
+                const runUrl = `https://generativelanguage.googleapis.com/v1beta/${target.name}:generateContent?key=${KEY}`;
+                const runRes = await fetch(runUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: input + "について、石の鑑定士として石言葉と癒やしのメッセージを150文字以内で答えて。" }] }]
+                        contents: [{ parts: [{ text: input + "について、石言葉と癒やしのメッセージを100文字で教えて。" }] }]
                     })
                 });
 
-                const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-
-                const text = data.candidates[0].content.parts[0].text;
-                resArea.innerHTML = text.replace(/\n/g, '<br>');
+                const runData = await runRes.json();
+                resArea.innerHTML = runData.candidates[0].content.parts[0].text;
 
             } catch (e) {
-                resArea.innerHTML = '<span style="color: #ffb3b3;">鑑定失敗: ' + e.message + '</span>';
+                resArea.innerHTML = '鑑定失敗: ' + e.message;
             }
         };
     </script>
