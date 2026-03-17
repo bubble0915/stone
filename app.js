@@ -40,7 +40,7 @@ form.addEventListener("submit", async (e) => {
 
     resultMeta.classList.remove("hidden");
 
-    /* 一切加工せず、全文そのまま表示 */
+    // 返答を一切加工せず、そのまま全文表示
     resultText.textContent = data.text || "結果を受け取れませんでした。";
     resultArea.classList.remove("hidden");
   } catch (error) {
@@ -66,12 +66,10 @@ async function postWithTimeout(url, body, timeoutMs = 20000) {
       signal: controller.signal
     });
 
-    const data = await response.json().catch(() => ({
+    return await response.json().catch(() => ({
       ok: false,
       error: "JSONの読み取りに失敗しました。"
     }));
-
-    return data;
   } finally {
     clearTimeout(timer);
   }
