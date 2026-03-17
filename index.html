@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>石のつぶやきAI</title>
     <style>
-        /* 1番目のデザイン：紺色グラデーションと赤ピンクのボタン */
+        /* 初代デザインの完全復元 */
         body { 
             background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%); 
             color: #e94560; 
@@ -28,7 +28,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        h1 { color: #fff; text-shadow: 0 0 10px #e94560; margin-bottom: 25px; }
+        h1 { color: #fff; text-shadow: 0 0 10px #e94560; margin-bottom: 25px; font-weight: bold; }
         input { 
             padding: 15px; 
             width: 85%; 
@@ -68,13 +68,13 @@
 <body>
     <div class="container">
         <h1>✨ 石のつぶやきAI</h1>
-        <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">あなたの心に、石の言葉をそっと届けます</p>
+        <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">石の記憶と、あなたの心を繋ぎます</p>
         
-        <input type="text" id="stoneInput" placeholder="例：ラピスラズリ、仕事で成功したい">
+        <input type="text" id="stoneInput" placeholder="例：ラピスラズリ、疲れを癒やしたい">
         <br>
         <button onclick="execute()">石の声を聴く</button>
         
-        <div id="resultArea">※ここに優しいつぶやきが現れます</div>
+        <div id="resultArea">※ここに優しいメッセージが届きます</div>
     </div>
 
     <script>
@@ -85,41 +85,39 @@
             const input = document.getElementById('stoneInput').value.trim();
             if(!input) return;
 
-            out.innerHTML = '✨ 石があなたの想いを受け止めています...';
-
-            // さきほど成功した「8b」モデルを名指しで指定
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${KEY}`;
+            out.innerHTML = '✨ 石の記憶を探っています...';
 
             try {
-                const response = await fetch(url, {
+                // 【重要】まず使えるモデルをGoogleに聞き出す
+                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${KEY}`);
+                const listData = await listRes.json();
+                
+                // 鑑定に使えるモデルを自動で抽出
+                const target = listData.models.find(m => m.supportedGenerationMethods.includes('generateContent'));
+                
+                if (!target) {
+                    out.innerHTML = "Google側の準備がまだ完了していないようです。1分後に再度お試しください。";
+                    return;
+                }
+
+                // 判明したモデル名を使って、寄り添う鑑定を実行
+                const runUrl = `https://generativelanguage.googleapis.com/v1beta/${target.name}:generateContent?key=${KEY}`;
+                const response = await fetch(runUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ 
-                            parts: [{ text: "あなたは謙虚で心優しい天然石鑑定士です。決して偉そうにせず、相談者に寄り添う言葉遣いで、" + input + "についての石言葉と、持ち主が前向きになれるようなメッセージを150文字以内で優しく語りかけてください。" }] 
+                            parts: [{ text: "あなたは謙虚で心優しい鑑定士として、決して偉そうにせず、相談者に寄り添う言葉遣いで、" + input + "の石言葉とメッセージを150文字以内で優しく語りかけてください。" }] 
                         }]
                     })
                 });
 
                 const data = await response.json();
-                
-                // もし「8b」でもダメな場合の究極の保険：名前を「gemini-1.5-flash」にして再試行
-                if (data.error) {
-                    const retryUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
-                    const res2 = await fetch(retryUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: input + "の石言葉を優しく教えて。" }] }] })
-                    });
-                    const data2 = await res2.json();
-                    out.innerHTML = data2.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
-                } else {
-                    const text = data.candidates[0].content.parts[0].text;
-                    out.innerHTML = text.replace(/\n/g, '<br>');
-                }
+                const text = data.candidates[0].content.parts[0].text;
+                out.innerHTML = text.replace(/\n/g, '<br>');
 
             } catch (e) {
-                out.innerHTML = "石のつぶやきが届きませんでした。もう一度だけ、優しくボタンを押してみてください。";
+                out.innerHTML = "石のつぶやきが届きませんでした。コードは最新です。Googleの反映を待つため、数分後に再度お試しください。";
             }
         }
     </script>
