@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>石のつぶやきAI</title>
     <style>
-        /* 1番目のデザインを完全再現 */
+        /* 初代デザインを100%再現 */
         body { 
             background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%); 
             color: #e94560; 
@@ -44,7 +44,7 @@
 <body>
     <div class="container">
         <h1>✨ 石のつぶやきAI</h1>
-        <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">あなたの心に寄り添い、石の言葉を届けます</p>
+        <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">心優しき石の言葉を、あなたに届けます</p>
         <input type="text" id="stoneInput" placeholder="石の名や、今のお悩みを...">
         <br>
         <button onclick="execute()">石の声を聴く</button>
@@ -59,10 +59,10 @@
             const input = document.getElementById('stoneInput').value.trim();
             if(!input) return;
 
-            out.innerHTML = '✨ 石が言葉を探しています...';
+            out.innerHTML = '✨ 石が言葉を紡いでいます...';
 
-            // エラーを回避するため、最も安定したURLを使用
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
+            // エラー原因を解消：モデル名を最新の 8b に指定
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${KEY}`;
 
             try {
                 const response = await fetch(url, {
@@ -70,14 +70,13 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ 
-                            parts: [{ text: "あなたは謙虚で、相談者の心に寄り添う優しい天然石鑑定士です。決して偉そうにせず、" + input + "の石言葉と、持ち主が救われるような温かいメッセージを150文字以内で語りかけてください。" }] 
+                            parts: [{ text: "あなたは謙虚で、相談者の心に寄り添う優しい天然石鑑定士です。決して偉そうにせず、相手を敬う言葉遣いで、" + input + "の石言葉と、持ち主が前向きになれる温かいメッセージを150文字以内で語りかけてください。" }] 
                         }]
                     })
                 });
 
                 const data = await response.json();
 
-                // エラーが出た場合、原因を直接表示する（これで「何が起きているか」わかります）
                 if (data.error) {
                     out.innerHTML = "石のつぶやきが届きませんでした。<br>原因: " + data.error.message;
                     return;
