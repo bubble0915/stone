@@ -2,22 +2,55 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>AI天然石鑑定テスト</title>
+    <title>AI天然石鑑定</title>
+    <style>
+        body { background: #16213e; color: white; text-align: center; font-family: sans-serif; padding-top: 50px; }
+        .box { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; display: inline-block; }
+        input { padding: 10px; width: 200px; }
+        button { padding: 10px; cursor: pointer; background: #e94560; color: white; border: none; }
+        #resultArea { margin-top: 20px; white-space: pre-wrap; color: #00ffcc; }
+    </style>
 </head>
-<body style="background-color: black; color: white; text-align: center; padding-top: 50px;">
-    <h1>✨ AI鑑定 動作確認中 ✨</h1>
-    <p>画面が見えていれば、第一段階はクリアです。</p>
-    
-    <input type="text" id="stoneInput" value="水晶">
-    <button id="testBtn" style="padding: 10px 20px;">鑑定ボタン</button>
-    
-    <div id="resultArea" style="margin-top: 30px; color: yellow;"></div>
+<body>
+
+    <div class="box">
+        <h1>🔮 石の鑑定所</h1>
+        <input type="text" id="stoneInput" placeholder="石の名前を入力">
+        <button onclick="execute()">鑑定する</button>
+        <div id="resultArea">ここに結果が出ます</div>
+    </div>
 
     <script>
-        // ボタンが押せるかどうかのテスト
-        document.getElementById('testBtn').onclick = function() {
-            document.getElementById('resultArea').innerHTML = 'ボタンは正常に動いています。キーを正しく入れれば完了です。';
-        };
+        // 【重要】APIキーを '' の間に貼り付けてください
+        const KEY = 'AIzaSyD6zFfwmA41hvoEHwE9rCjjwfqh6eiWIbY'; 
+
+        async function execute() {
+            const resArea = document.getElementById('resultArea');
+            const input = document.getElementById('stoneInput').value;
+            if (!input) return;
+
+            resArea.innerHTML = '✨ 共鳴中...';
+
+            // 最新の無料枠用URL
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${KEY}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: input + "について石言葉を教えて" }] }]
+                    })
+                });
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error.message);
+                
+                resArea.innerHTML = data.candidates[0].content.parts[0].text;
+            } catch (e) {
+                resArea.innerHTML = "エラー: " + e.message;
+            }
+        }
     </script>
 </body>
 </html>
