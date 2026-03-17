@@ -1,40 +1,36 @@
 const WORKER_URL = "https://stone-01.its-brg77.workers.dev";
 
-const form = document.getElementById("stone-form");
-const input = document.getElementById("stone-input");
-const output = document.getElementById("stone-output");
-const button = document.getElementById("send-button");
+async function askStone() {
+  const input = document.getElementById("stoneInput").value;
+  const output = document.getElementById("stoneOutput");
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+  if (!input) {
+    output.innerText = "質問を入力してください。";
+    return;
+  }
 
-  const message = input.value.trim();
-  if (!message) return;
-
-  button.disabled = true;
-  output.textContent = "石の声を、静かに受け取っています…";
+  output.innerText = "石の声を聞いています…";
 
   try {
-    const response = await fetch(WORKER_URL, {
+    const res = await fetch(WORKER_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ message })
+      body: JSON.stringify({
+        message: input
+      })
     });
 
-    const data = await response.json();
+    const data = await res.json();
 
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || "通信エラーが発生しました。");
+    if (data.ok) {
+      output.innerText = data.text;
+    } else {
+      output.innerText = "AIが答えられませんでした。";
     }
 
-    output.textContent = data.text;
-  } catch (error) {
-    console.error("エラー:", error);
-    output.textContent =
-      "ごめんなさい。今は少し通信が不安定なようです。少し時間をおいて、もう一度そっと話しかけてみてください。";
-  } finally {
-    button.disabled = false;
+  } catch (err) {
+    output.innerText = "通信エラーが発生しました。";
   }
-});
+}
