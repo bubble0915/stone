@@ -22,7 +22,6 @@ form.addEventListener("submit", async (e) => {
   resultText.textContent = "";
 
   try {
-    // 待機時間を40秒に延長（Geminiが長文を書くのを最後まで待つ）
     const response = await fetch(WORKER_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -31,17 +30,17 @@ form.addEventListener("submit", async (e) => {
 
     const data = await response.json();
 
-    if (!data.ok) {
-      showError(data.error || "通信エラーが発生しました。");
-      return;
+    if (data.ok) {
+      resultMeta.textContent = data.mode === "stone" ? "【石の辞典】" : "【心の提案】";
+      resultMeta.classList.remove("hidden");
+      resultText.textContent = data.text;
+      resultArea.classList.remove("hidden");
+    } else {
+      // ここで詳細なエラーを表示
+      showError("サーバーエラー: " + data.error);
     }
-
-    resultMeta.textContent = data.mode === "stone" ? "【石の辞典】" : "【心の提案】";
-    resultMeta.classList.remove("hidden");
-    resultText.textContent = data.text;
-    resultArea.classList.remove("hidden");
   } catch (error) {
-    showError("通信が途切れました。AIが長考しているかもしれません。もう一度「調べる」を押してみてください。");
+    showError("通信エラー: 接続に失敗しました。URLが正しいか確認してください。");
   } finally {
     button.disabled = false;
     loading.classList.add("hidden");
@@ -49,7 +48,7 @@ form.addEventListener("submit", async (e) => {
 });
 
 function showError(message) {
-  resultMeta.textContent = "お知らせ";
+  resultMeta.textContent = "デバッグ情報";
   resultMeta.classList.remove("hidden");
   resultEmpty.classList.add("hidden");
   resultText.textContent = message;
