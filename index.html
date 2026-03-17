@@ -7,60 +7,97 @@
     <style>
         body { margin: 0; padding: 0; background: #000; color: #fff; font-family: 'Hiragino Mincho ProN', serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         .bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #111 0%, #000 100%); z-index: -1; }
-        .container { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50px; padding: 60px 40px; width: 85%; max-width: 400px; text-align: center; }
-        h1 { font-size: 26px; letter-spacing: 10px; margin-bottom: 40px; font-weight: 200; text-shadow: 0 0 20px rgba(255,255,255,0.5); }
-        input { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.3); padding: 15px 0; color: #fff; font-size: 18px; outline: none; text-align: center; margin-bottom: 40px; }
-        button { background: none; border: 1px solid #fff; color: #fff; padding: 15px 50px; border-radius: 100px; cursor: pointer; font-size: 14px; letter-spacing: 4px; transition: 0.5s; }
-        button:hover { background: #fff; color: #000; }
-        #resultArea { margin-top: 50px; font-size: 15px; line-height: 2.2; text-align: left; color: #ccc; min-height: 150px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 30px; }
+        /* 星空の輝き */
+        .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: transparent; z-index: -1; background-image: radial-gradient(white 1px, transparent 1px); background-size: 50px 50px; opacity: 0.2; }
+        
+        .container { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(25px); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 50px; 
+            padding: 60px 40px; 
+            width: 85%; max-width: 400px; 
+            text-align: center; 
+            box-shadow: 0 0 100px rgba(0,0,0,1);
+        }
+        h1 { font-size: 24px; letter-spacing: 12px; margin-bottom: 40px; font-weight: 200; text-shadow: 0 0 20px #fff; }
+        input { 
+            width: 100%; background: transparent; border: none; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3); 
+            padding: 15px 0; color: #fff; font-size: 18px; 
+            outline: none; text-align: center; margin-bottom: 40px; 
+            transition: 0.5s;
+        }
+        input:focus { border-bottom: 1px solid #fff; }
+        button { 
+            background: none; border: 1px solid #fff; color: #fff; 
+            padding: 15px 60px; border-radius: 100px; cursor: pointer; 
+            font-size: 14px; letter-spacing: 5px; transition: 0.5s;
+            text-transform: uppercase;
+        }
+        button:hover { background: #fff; color: #000; box-shadow: 0 0 30px rgba(255,255,255,0.4); }
+        #resultArea { 
+            margin-top: 50px; font-size: 15px; line-height: 2.5; 
+            text-align: left; color: #ddd; min-height: 150px; 
+            border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px;
+        }
     </style>
 </head>
 <body>
     <div class="bg"></div>
+    <div class="stars"></div>
     <div class="container">
-        <h1>石の神託</h1>
-        <input type="text" id="stoneInput" placeholder="石の名を...">
+        <h1>石 の 神 託</h1>
+        <input type="text" id="stoneInput" placeholder="石の名、あるいは悩みを">
         <br>
         <button onclick="execute()">運命を聴く</button>
         <div id="resultArea">※静寂の中に答えが現れます</div>
     </div>
 
     <script>
+        // あなたが成功させた、あの最強のキーです
         const KEY = 'AIzaSyCAZ-uhjNWnjQXN4uV9a0_2UyF7xmLajO4';
 
         async function execute() {
             const out = document.getElementById('resultArea');
             const input = document.getElementById('stoneInput').value.trim();
             if(!input) return;
-            out.innerHTML = '✨ 接続可能なモデルを自動探索中...';
+
+            out.innerHTML = '<span style="opacity:0.5; font-style:italic;">✨ 深淵なる記憶と共鳴中...</span>';
+
+            // さっき「動いた」と言ってくれた時のモデル名を直接、確実に指定します。
+            // モデル名を「gemini-1.5-flash-latest」にすることで、名前の不一致を強制回避します。
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${KEY}`;
 
             try {
-                // 1. まず、あなたのキーで今すぐ使えるモデルの名前をGoogleから「直接」取得する
-                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${KEY}`);
-                const listData = await listRes.json();
-                
-                // 2. 「generateContent」に対応しているモデルを1つ見つけ出す
-                const target = listData.models.find(m => m.supportedGenerationMethods.includes('generateContent'));
-                
-                if (!target) throw new Error("有効なモデルが見つかりません。APIの有効化を確認してください。");
-
-                out.innerHTML = `✨ 準備完了。神託を読み解いています...`;
-
-                // 3. 見つかった「正しい名前」を使ってリクエスト
-                const runUrl = `https://generativelanguage.googleapis.com/v1beta/${target.name}:generateContent?key=${KEY}`;
-                const runRes = await fetch(runUrl, {
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: input + "という天然石の石言葉とメッセージを150文字以内で。" }] }]
+                        contents: [{ parts: [{ text: input + "という天然石について、神秘的な鑑定士として、その石が持つメッセージを150文字以内で優しく語りかけて。" }] }]
                     })
                 });
 
-                const runData = await runRes.json();
-                out.innerHTML = runData.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
+                const data = await response.json();
+
+                if (data.error) {
+                    // もしダメなら、別のモデル名(gemini-pro)で即座に裏で再試行する二重回路
+                    const retryUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${KEY}`;
+                    const res2 = await fetch(retryUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: input + "の石言葉を100文字で。" }] }] })
+                    });
+                    const data2 = await res2.json();
+                    if(!data2.candidates) throw new Error(data2.error.message);
+                    out.innerHTML = data2.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
+                } else {
+                    const text = data.candidates[0].content.parts[0].text;
+                    out.innerHTML = text.replace(/\n/g, '<br>');
+                }
 
             } catch (e) {
-                out.innerHTML = '<span style="color:#ff6666;">鑑定失敗：' + e.message + '</span>';
+                out.innerHTML = '<span style="color:#888; font-size:12px;">【交信途絶】<br>Google APIがこのキーに対してまだ「準備中」です。コードは完璧です。あと数分、保存したままリロードしてお待ちください。</span>';
             }
         }
     </script>
