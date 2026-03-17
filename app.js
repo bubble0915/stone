@@ -26,7 +26,8 @@ form.addEventListener("submit", async (e) => {
   resultText.textContent = "";
 
   try {
-    const data = await postWithTimeout(WORKER_URL, { input }, 20000);
+    // タイムアウトを30秒に延長して、Workerの返信を最後まで待つ
+    const data = await postWithTimeout(WORKER_URL, { input }, 30000);
 
     if (!data.ok) {
       showError(data.error || "通信エラーが発生しました。");
@@ -39,36 +40,32 @@ form.addEventListener("submit", async (e) => {
         : "今の気持ちとして受け取り、対処法と合う石を整理しました。";
 
     resultMeta.classList.remove("hidden");
-
-    // 返答を一切加工せず、そのまま全文表示
-    resultText.textContent = data.text || "結果を受け取れませんでした。";
+    resultText.textContent = data.text; // 全文を表示
     resultArea.classList.remove("hidden");
   } catch (error) {
     console.error(error);
-    showError("通信が止まってしまいました。少し時間をおいて、もう一度お試しください。");
+    showError("通信が途切れてしまいました。もう一度「調べる」を押してみてください。");
   } finally {
     button.disabled = false;
     loading.classList.add("hidden");
   }
 });
 
-async function postWithTimeout(url, body, timeoutMs = 20000) {
+async function postWithTimeout(url, body, timeoutMs = 30000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const response = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
       signal: controller.signal
     });
 
     return await response.json().catch(() => ({
       ok: false,
-      error: "JSONの読み取りに失敗しました。"
+      error: "データの解析に失敗しました。"
     }));
   } finally {
     clearTimeout(timer);
