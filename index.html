@@ -7,41 +7,83 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <header class="header">
+  <div class="bg-glow"></div>
+
+  <main class="app">
+    <header class="hero">
+      <div class="hero-badge">天然石鑑定アプリ</div>
       <h1>石のつぶやきAI</h1>
-      <p class="subtitle">天然石の声に、そっと耳をすませる小さな案内役</p>
+      <p class="hero-text">
+        石の名前と、今のあなたの気持ちをそっと入力してみてください。<br />
+        やさしく静かな言葉で、石からのメッセージをお返しします。
+      </p>
     </header>
 
-    <main class="card">
-      <p class="intro">
-        気になる天然石のことを、やさしくたずねてみてください。<br>
-        石の意味や雰囲気を、寄り添う言葉でお返しします。
-      </p>
-
+    <section class="card input-card">
       <form id="stone-form">
-        <label for="stone-input" class="label">ご相談内容</label>
-        <textarea
-          id="stone-input"
-          placeholder="例：ローズクォーツは今の私にどんなメッセージをくれますか？"
-          required
-        ></textarea>
+        <div class="field">
+          <label for="stone-name">石の名前</label>
+          <input
+            id="stone-name"
+            type="text"
+            placeholder="例：ローズクォーツ、アメジスト、水晶"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="stone-feeling">今の気持ち・相談したいこと</label>
+          <textarea
+            id="stone-feeling"
+            placeholder="例：最近少し疲れています。心を落ち着かせたいです。"
+            required
+          ></textarea>
+        </div>
 
         <button type="submit" id="send-button">石にたずねる</button>
       </form>
+    </section>
 
-      <section class="result-section">
-        <h2>石からのことば</h2>
-        <div id="stone-output" class="result-box">
-          ここにやさしいメッセージが表示されます。
+    <section class="card result-card">
+      <div class="result-header">
+        <h2>鑑定結果</h2>
+        <p>石からのやさしいことば</p>
+      </div>
+
+      <div id="loading" class="loading hidden">石の声を静かに受け取っています…</div>
+
+      <div id="result-empty" class="empty-state">
+        ここに鑑定結果が表示されます。
+      </div>
+
+      <div id="result-area" class="result-area hidden">
+        <div class="result-block">
+          <h3>石の名前</h3>
+          <p id="result-stone"></p>
         </div>
-      </section>
-    </main>
 
-    <footer class="footer">
-      <p>石のつぶやきAI</p>
-    </footer>
-  </div>
+        <div class="result-block">
+          <h3>石のやさしい意味</h3>
+          <p id="result-meaning"></p>
+        </div>
+
+        <div class="result-block">
+          <h3>今のあなたへのつぶやき</h3>
+          <p id="result-message"></p>
+        </div>
+
+        <div class="result-block">
+          <h3>おすすめの寄り添い方</h3>
+          <p id="result-care"></p>
+        </div>
+
+        <div class="result-block">
+          <h3>相性のよい石</h3>
+          <p id="result-partner"></p>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <script src="app.js"></script>
 </body>
