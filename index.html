@@ -1,55 +1,169 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>石のつぶやきAI</title>
-  <link rel="stylesheet" href="style.css?v=3" />
-</head>
-<body>
-  <div class="bg-glow"></div>
+export default {
+  async fetch(request, env) {
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders() });
+    }
 
-  <main class="app">
-    <header class="hero">
-      <div class="hero-badge">天然石辞典 × 気持ちに合う石提案</div>
-      <h1>石のつぶやきAI</h1>
-      <p class="hero-text">
-        石の名前を入れると、辞典のように意味や効能をお返しします。<br>
-        今の気持ちを入れると、対処法と、その状況に合う石を最大3つご提案します。
-      </p>
-    </header>
+    if (request.method !== "POST") {
+      return jsonResponse({ ok: false, error: "POST only" }, 200);
+    }
 
-    <section class="card input-card">
-      <form id="stone-form">
-        <div class="field">
-          <label for="user-input">石の名前、または今の気持ち</label>
-          <textarea
-            id="user-input"
-            placeholder="例1：アメジスト&#10;例2：最近疲れていて、心を落ち着かせたいです"
-            required
-          ></textarea>
-        </div>
+    try {
+      const body = await request.json();
+      const input = String(body.input || "").trim();
 
-        <button type="submit" id="send-button">調べる</button>
-      </form>
-    </section>
+      if (!input) {
+        return jsonResponse({ ok: false, error: "input is required" }, 200);
+      }
 
-    <section class="card result-card">
-      <div class="result-header">
-        <h2>結果</h2>
-        <p>返ってきた内容を全部そのまま表示します</p>
-      </div>
+      const mode = detectMode(input);
+      const prompt = buildPrompt(mode, input);
 
-      <div id="loading" class="loading hidden">静かに読み取っています…</div>
-      <div id="result-empty" class="empty-state">ここに結果が表示されます。</div>
-      <div id="result-meta" class="result-meta hidden"></div>
+      const apiUrl =
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
-      <div id="result-area" class="result-area hidden">
-        <pre id="result-text"></pre>
-      </div>
-    </section>
-  </main>
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 18000);
 
-  <script src="app.js?v=3"></script>
-</body>
-</html>
+      let response;
+      try {
+        response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": env.GEMINI_API_KEY
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: prompt }]
+              }
+            ],
+            generationConfig: {
+              temperature: 0.72,
+              topP: 0.95,
+              maxOutputTokens: 1200
+            }
+          }),
+          signal: controller.signal
+        });
+      } finally {
+        clearTimeout(timer);
+      }
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        return jsonResponse({
+          ok: false,
+          error: data?.error?.message || `Gemini API error: ${response.status}`
+        }, 200);
+      }
+
+      const text =
+        data?.candidates?.[0]?.content?.parts
+          ?.map(part => part?.text || "")
+          .join("")
+          .trim() ||
+        "結果を受け取れませんでした。";
+
+      return jsonResponse({ ok: true, mode, text }, 200);
+    } catch (error) {
+      return jsonResponse({
+        ok: false,
+        error:
+          error?.name === "AbortError"
+            ? "AIの応答がタイムアウトしました。"
+            : (error?.message || "Unknown error")
+      }, 200);
+    }
+  }
+};
+
+function buildPrompt(mode, input) {
+  if (mode === "stone") {
+    return `
+あなたは「石のつぶやきAI」です。
+天然石辞典として、入力された石について、やさしく丁寧で読みやすい日本語で説明してください。
+断定しすぎず、辞典のように整理してください。
+必要な情報は省略せず、できるだけ詳しく出してください。
+
+必ず次の見出しを含めてください。
+石の名前
+意味
+効能
+こんな時におすすめ
+浄化方法
+取り扱いのヒント
+注意点
+相性のよい石
+
+入力された石:
+${input}
+`.trim();
+  }
+
+  return `
+あなたは「石のつぶやきAI」です。
+入力された気持ちや悩みに対して、やさしい対処法と、その状況に合う天然石を最大3つまで提案してください。
+やわらかい日本語で、整理してわかりやすく、できるだけ詳しく答えてください。
+
+必ず次の見出しを含めてください。
+今の気持ちへのやさしい対処法
+日常でできる対処法
+おすすめの石1
+おすすめの石2
+おすすめの石3
+それぞれをすすめる理由
+ひとこと
+
+入力された気持ち・悩み:
+${input}
+`.trim();
+}
+
+function detectMode(input) {
+  const stoneLikeWords = [
+    "クォーツ", "アメジスト", "水晶", "タイガーアイ", "ラピス", "翡翠", "メノウ",
+    "シトリン", "ムーンストーン", "ローズクォーツ", "オニキス", "インカローズ",
+    "ラブラドライト", "フローライト", "ガーネット", "アクアマリン", "トルマリン",
+    "石", "クリスタル"
+  ];
+
+  const feelingLikeWords = [
+    "疲れ", "つらい", "不安", "悲しい", "寂しい", "恋愛", "仕事", "人間関係",
+    "落ち着き", "前向き", "悩み", "心", "気持ち", "眠れ", "元気", "苦しい",
+    "焦り", "ストレス", "しんどい"
+  ];
+
+  const isStoneLike =
+    input.length <= 20 ||
+    stoneLikeWords.some(word => input.includes(word));
+
+  const isFeelingLike =
+    feelingLikeWords.some(word => input.includes(word)) ||
+    input.length > 20;
+
+  if (isFeelingLike && !isStoneLike) return "feeling";
+  if (isStoneLike && !isFeelingLike) return "stone";
+  return input.length <= 15 ? "stone" : "feeling";
+}
+
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=UTF-8",
+      ...corsHeaders()
+    }
+  });
+}
+
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS"
+  };
+}
