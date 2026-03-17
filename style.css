@@ -37,7 +37,7 @@ body {
 
 .app {
   position: relative;
-  max-width: 860px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 28px 16px 50px;
 }
@@ -153,13 +153,19 @@ button:disabled {
 }
 
 .loading,
-.empty-state {
+.empty-state,
+.result-meta {
   margin-top: 18px;
   padding: 16px;
   border-radius: 16px;
   background: var(--result);
   color: var(--subtext);
   line-height: 1.8;
+}
+
+.result-meta {
+  color: var(--soft);
+  font-size: 0.95rem;
 }
 
 .result-area {
