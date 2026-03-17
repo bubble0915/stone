@@ -1,52 +1,53 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>AI天然石鑑定士</title>
-</head>
-<body style="background-color: #16213e; color: white; text-align: center; padding-top: 50px; font-family: sans-serif;">
-    <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px; display: inline-block;">
+<head><meta charset="UTF-8"><title>AI鑑定</title></head>
+<body style="background:#16213e; color:white; text-align:center; padding-top:50px; font-family:sans-serif;">
+    <div style="background:rgba(255,255,255,0.1); padding:30px; border-radius:20px; display:inline-block;">
         <h1>🔮 AI天然石鑑定所</h1>
-        <input type="text" id="stoneInput" value="水晶" style="padding: 10px;">
-        <button id="execBtn" style="padding: 10px 20px; background: #e94560; color: white; border: none; cursor: pointer;">石の声を聴く</button>
-        <div id="resultArea" style="margin-top: 30px; color: #00ffcc; max-width: 400px;">※鑑定結果待ち</div>
+        <input type="text" id="stoneInput" value="水晶" style="padding:10px;">
+        <button id="execBtn" style="padding:10px 20px; background:#e94560; color:white; border:none; cursor:pointer;">石の声を聴く</button>
+        <div id="resultArea" style="margin-top:30px; color:#00ffcc; max-width:400px; text-align:left;">※結果待ち</div>
     </div>
 
     <script>
+        // 【最重要】...2896で作った最新のキーをここに貼ってください
         const KEY = 'AIzaSyD6zFfwmA41hvoEHwE9rCjjwfqh6eiWIbY'; 
 
         document.getElementById('execBtn').onclick = async function() {
             const resArea = document.getElementById('resultArea');
             const input = document.getElementById('stoneInput').value;
-            resArea.innerHTML = '✨ 接続可能な石の精霊を探しています...';
+            resArea.innerHTML = '✨ 石の精霊をリストアップ中...';
 
             try {
-                // 1. 今使えるモデルをリストアップする
-                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${KEY}`);
-                const listData = await listRes.json();
-                
-                // 2. 鑑定ができるモデル（gemini-1.5-flashなど）を自動で見つける
-                const target = listData.models.find(m => m.supportedGenerationMethods.includes('generateContent') && m.name.includes('gemini-1.5'));
-                
-                if (!target) throw new Error("利用可能なモデルが見つかりません。APIの有効化を確認してください。");
-                
-                resArea.innerHTML = `✨ ${target.displayName} で鑑定中...`;
+                // 1. あなたのキーで「今、許可されているモデル」をGoogleから直接奪い取る
+                const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${KEY}`;
+                const listResponse = await fetch(listUrl);
+                const listData = await listResponse.json();
 
-                // 3. 見つけたモデル名で鑑定を実行
-                const runUrl = `https://generativelanguage.googleapis.com/v1beta/${target.name}:generateContent?key=${KEY}`;
-                const runRes = await fetch(runUrl, {
+                if (listData.error) throw new Error("APIキーが無効、またはAPIが有効化されていません。");
+
+                // 2. 鑑定ができるモデルを自動で1つ選ぶ
+                const targetModel = listData.models.find(m => m.supportedGenerationMethods.includes('generateContent'));
+
+                if (!targetModel) throw new Error("使用可能なモデルが1つも見つかりません。Google Cloud ConsoleでAPIを有効にしてください。");
+
+                resArea.innerHTML = `✨ ${targetModel.displayName} と共鳴中...`;
+
+                // 3. 判明した正しいモデル名でリクエストを送る
+                const runUrl = `https://generativelanguage.googleapis.com/v1beta/${targetModel.name}:generateContent?key=${KEY}`;
+                const runResponse = await fetch(runUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: input + "について、石言葉と癒やしのメッセージを100文字で教えて。" }] }]
+                        contents: [{ parts: [{ text: input + "について、石言葉を100文字で教えて。" }] }]
                     })
                 });
 
-                const runData = await runRes.json();
+                const runData = await runResponse.json();
                 resArea.innerHTML = runData.candidates[0].content.parts[0].text;
 
             } catch (e) {
-                resArea.innerHTML = '鑑定失敗: ' + e.message;
+                resArea.innerHTML = '【最終エラー】' + e.message + '<br><br>※このエラーが出る場合は、AI Studioの「APIを有効化」ボタンがまだ押されていません。';
             }
         };
     </script>
