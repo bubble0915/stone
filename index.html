@@ -5,75 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>石のつぶやきAI</title>
     <style>
-        /* 初代デザインの完全復元 */
+        /* 1番目のデザインを完全再現 */
         body { 
             background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%); 
             color: #e94560; 
             text-align: center; 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
-            padding: 20px;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            margin: 0; min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
         }
         .container {
-            max-width: 500px;
-            width: 95%;
+            max-width: 500px; width: 90%;
             background: rgba(255, 255, 255, 0.05);
-            padding: 40px 30px;
-            border-radius: 20px;
+            padding: 40px 30px; border-radius: 20px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        h1 { color: #fff; text-shadow: 0 0 10px #e94560; margin-bottom: 25px; font-weight: bold; }
+        h1 { color: #fff; text-shadow: 0 0 10px #e94560; margin-bottom: 25px; }
         input { 
-            padding: 15px; 
-            width: 85%; 
-            border-radius: 10px; 
-            border: none; 
-            background: rgba(255,255,255,0.1); 
-            color: #fff; 
-            font-size: 16px;
-            margin-bottom: 25px;
-            outline: none;
-            text-align: center;
+            padding: 15px; width: 85%; border-radius: 10px; border: none; 
+            background: rgba(255,255,255,0.1); color: #fff; font-size: 16px;
+            margin-bottom: 25px; outline: none; text-align: center;
         }
         button { 
-            padding: 15px 40px; 
-            border-radius: 10px; 
-            background: #e94560; 
-            color: #fff; 
-            border: none; 
-            cursor: pointer; 
-            font-weight: bold;
+            padding: 15px 40px; border-radius: 10px; background: #e94560; 
+            color: #fff; border: none; cursor: pointer; font-weight: bold;
             transition: 0.3s;
         }
         button:hover { transform: scale(1.05); background: #ff4d6d; }
         #resultArea { 
-            margin-top: 30px; 
-            padding: 20px; 
-            min-height: 120px; 
-            color: #e0e0e0; 
-            line-height: 2;
-            text-align: left;
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-            font-size: 15px;
+            margin-top: 30px; padding: 20px; min-height: 120px; 
+            color: #e0e0e0; line-height: 2; text-align: left;
+            background: rgba(0,0,0,0.3); border-radius: 10px; font-size: 15px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>✨ 石のつぶやきAI</h1>
-        <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">石の記憶と、あなたの心を繋ぎます</p>
-        
-        <input type="text" id="stoneInput" placeholder="例：ラピスラズリ、疲れを癒やしたい">
+        <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">あなたの心に寄り添い、石の言葉を届けます</p>
+        <input type="text" id="stoneInput" placeholder="石の名や、今のお悩みを...">
         <br>
         <button onclick="execute()">石の声を聴く</button>
-        
         <div id="resultArea">※ここに優しいメッセージが届きます</div>
     </div>
 
@@ -85,39 +59,35 @@
             const input = document.getElementById('stoneInput').value.trim();
             if(!input) return;
 
-            out.innerHTML = '✨ 石の記憶を探っています...';
+            out.innerHTML = '✨ 石が言葉を探しています...';
+
+            // エラーを回避するため、最も安定したURLを使用
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
 
             try {
-                // 【重要】まず使えるモデルをGoogleに聞き出す
-                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${KEY}`);
-                const listData = await listRes.json();
-                
-                // 鑑定に使えるモデルを自動で抽出
-                const target = listData.models.find(m => m.supportedGenerationMethods.includes('generateContent'));
-                
-                if (!target) {
-                    out.innerHTML = "Google側の準備がまだ完了していないようです。1分後に再度お試しください。";
-                    return;
-                }
-
-                // 判明したモデル名を使って、寄り添う鑑定を実行
-                const runUrl = `https://generativelanguage.googleapis.com/v1beta/${target.name}:generateContent?key=${KEY}`;
-                const response = await fetch(runUrl, {
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ 
-                            parts: [{ text: "あなたは謙虚で心優しい鑑定士として、決して偉そうにせず、相談者に寄り添う言葉遣いで、" + input + "の石言葉とメッセージを150文字以内で優しく語りかけてください。" }] 
+                            parts: [{ text: "あなたは謙虚で、相談者の心に寄り添う優しい天然石鑑定士です。決して偉そうにせず、" + input + "の石言葉と、持ち主が救われるような温かいメッセージを150文字以内で語りかけてください。" }] 
                         }]
                     })
                 });
 
                 const data = await response.json();
+
+                // エラーが出た場合、原因を直接表示する（これで「何が起きているか」わかります）
+                if (data.error) {
+                    out.innerHTML = "石のつぶやきが届きませんでした。<br>原因: " + data.error.message;
+                    return;
+                }
+
                 const text = data.candidates[0].content.parts[0].text;
                 out.innerHTML = text.replace(/\n/g, '<br>');
 
             } catch (e) {
-                out.innerHTML = "石のつぶやきが届きませんでした。コードは最新です。Googleの反映を待つため、数分後に再度お試しください。";
+                out.innerHTML = "通信がうまくいきませんでした。もう一度試してみてください。";
             }
         }
     </script>
