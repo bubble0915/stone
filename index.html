@@ -14,8 +14,8 @@
       <div class="hero-badge">天然石辞典 × 気持ちに合う石提案</div>
       <h1>石のつぶやきAI</h1>
       <p class="hero-text">
-        石の名前を入れると、意味や効能を辞典のようにお答えします。<br />
-        今の気持ちを入れると、対処法と、その状況に合う石を最大3つご提案します。
+        石の名前を入れると、辞典のように意味や効能をお返しします。<br />
+        今の気持ちを入れると、やさしい対処法と、その状況に合う石を最大3つご提案します。
       </p>
     </header>
 
@@ -25,7 +25,7 @@
           <label for="user-input">石の名前、または今の気持ち</label>
           <textarea
             id="user-input"
-            placeholder="例1：アメジスト&#10;例2：最近とても疲れていて、心を落ち着かせたいです"
+            placeholder="例1：アメジスト&#10;例2：最近疲れていて、心を落ち着かせたいです"
             required
           ></textarea>
         </div>
@@ -37,38 +37,14 @@
     <section class="card result-card">
       <div class="result-header">
         <h2>結果</h2>
-        <p>やさしく整理してお返しします</p>
+        <p>必要な情報を、できるだけ整理して全部表示します</p>
       </div>
 
       <div id="loading" class="loading hidden">静かに読み取っています…</div>
       <div id="result-empty" class="empty-state">ここに結果が表示されます。</div>
 
-      <div id="result-area" class="result-area hidden">
-        <div class="result-block">
-          <h3 id="block1-title">項目1</h3>
-          <p id="block1-text"></p>
-        </div>
-
-        <div class="result-block">
-          <h3 id="block2-title">項目2</h3>
-          <p id="block2-text"></p>
-        </div>
-
-        <div class="result-block">
-          <h3 id="block3-title">項目3</h3>
-          <p id="block3-text"></p>
-        </div>
-
-        <div class="result-block">
-          <h3 id="block4-title">項目4</h3>
-          <p id="block4-text"></p>
-        </div>
-
-        <div class="result-block">
-          <h3 id="block5-title">項目5</h3>
-          <p id="block5-text"></p>
-        </div>
-      </div>
+      <div id="result-meta" class="result-meta hidden"></div>
+      <div id="result-area" class="result-area hidden"></div>
     </section>
   </main>
 
