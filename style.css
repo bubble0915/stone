@@ -143,7 +143,7 @@ button:disabled {
 .loading,
 .empty-state,
 .result-meta,
-.result-box {
+.result-area {
   margin-top: 18px;
   padding: 16px;
   border-radius: 16px;
@@ -157,14 +157,13 @@ button:disabled {
   font-size: 0.95rem;
 }
 
-/* ここが全文表示の本体 */
-.result-box {
+.result-area {
   overflow: visible !important;
   max-height: none !important;
   height: auto !important;
 }
 
-#full-result {
+#result-text {
   margin: 0;
   white-space: pre-wrap !important;
   word-break: break-word !important;
