@@ -4,10 +4,9 @@ const form = document.getElementById("stone-form");
 const userInput = document.getElementById("user-input");
 const button = document.getElementById("send-button");
 const loading = document.getElementById("loading");
-const resultEmpty = document.getElementById("result-empty");
-const resultMeta = document.getElementById("result-meta");
 const resultArea = document.getElementById("result-area");
 const resultText = document.getElementById("result-text");
+const resultMeta = document.getElementById("result-meta");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -16,41 +15,34 @@ form.addEventListener("submit", async (e) => {
 
   button.disabled = true;
   loading.classList.remove("hidden");
-  resultEmpty.classList.add("hidden");
-  resultMeta.classList.add("hidden");
   resultArea.classList.add("hidden");
-  resultText.textContent = "";
+  resultMeta.classList.add("hidden");
 
   try {
     const response = await fetch(WORKER_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ input }),
+      body: JSON.stringify({ input })
     });
+
+    if (!response.ok) throw new Error("Workerサーバーが反応していません");
 
     const data = await response.json();
 
     if (data.ok) {
-      resultMeta.textContent = data.mode === "stone" ? "【石の辞典】" : "【心の提案】";
-      resultMeta.classList.remove("hidden");
+      resultMeta.textContent = "【鑑定結果】";
       resultText.textContent = data.text;
-      resultArea.classList.remove("hidden");
     } else {
-      // ここで詳細なエラーを表示
-      showError("サーバーエラー: " + data.error);
+      resultMeta.textContent = "【サーバーからの警告】";
+      resultText.textContent = data.error;
     }
   } catch (error) {
-    showError("通信エラー: 接続に失敗しました。URLが正しいか確認してください。");
+    resultMeta.textContent = "【通信エラー】";
+    resultText.textContent = "エラー詳細: " + error.message + "\n\n※URLが正しいか、Workerがデプロイされているか確認してください。";
   } finally {
-    button.disabled = false;
+    resultArea.classList.remove("hidden");
+    resultMeta.classList.remove("hidden");
     loading.classList.add("hidden");
+    button.disabled = false;
   }
 });
-
-function showError(message) {
-  resultMeta.textContent = "デバッグ情報";
-  resultMeta.classList.remove("hidden");
-  resultEmpty.classList.add("hidden");
-  resultText.textContent = message;
-  resultArea.classList.remove("hidden");
-}
