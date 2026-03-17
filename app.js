@@ -13,11 +13,9 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const input = userInput.value.trim();
-  if (!input) {
-    showError("入力してください。");
-    return;
-  }
+  if (!input) return;
 
+  // UIリセット
   button.disabled = true;
   loading.classList.remove("hidden");
   resultEmpty.classList.add("hidden");
@@ -26,7 +24,7 @@ form.addEventListener("submit", async (e) => {
   resultText.textContent = "";
 
   try {
-    // タイムアウトを30秒に延長して、Workerの返信を最後まで待つ
+    // タイムアウトを30秒に設定し、バックエンドの回答を最後まで待つ
     const data = await postWithTimeout(WORKER_URL, { input }, 30000);
 
     if (!data.ok) {
@@ -40,11 +38,10 @@ form.addEventListener("submit", async (e) => {
         : "今の気持ちとして受け取り、対処法と合う石を整理しました。";
 
     resultMeta.classList.remove("hidden");
-    resultText.textContent = data.text; // 全文を表示
+    resultText.textContent = data.text; // ここで全文を表示
     resultArea.classList.remove("hidden");
   } catch (error) {
-    console.error(error);
-    showError("通信が途切れてしまいました。もう一度「調べる」を押してみてください。");
+    showError("通信が途切れました。もう一度お試しください。");
   } finally {
     button.disabled = false;
     loading.classList.add("hidden");
@@ -63,10 +60,7 @@ async function postWithTimeout(url, body, timeoutMs = 30000) {
       signal: controller.signal
     });
 
-    return await response.json().catch(() => ({
-      ok: false,
-      error: "データの解析に失敗しました。"
-    }));
+    return await response.json();
   } finally {
     clearTimeout(timer);
   }
@@ -75,7 +69,6 @@ async function postWithTimeout(url, body, timeoutMs = 30000) {
 function showError(message) {
   resultMeta.textContent = "お知らせ";
   resultMeta.classList.remove("hidden");
-  resultEmpty.classList.add("hidden");
   resultText.textContent = message;
   resultArea.classList.remove("hidden");
 }
