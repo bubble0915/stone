@@ -2,117 +2,22 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✨ AI天然石鑑定士 ✨</title>
-    <style>
-        body { 
-            background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%); 
-            color: #e94560; 
-            text-align: center; 
-            font-family: 'Helvetica Neue', Arial, sans-serif; 
-            padding: 20px;
-            margin: 0;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 500px;
-            margin: auto;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 30px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        h1 { color: #fff; text-shadow: 0 0 10px #e94560; }
-        input { 
-            padding: 15px; 
-            width: 80%; 
-            border-radius: 10px; 
-            border: none; 
-            background: rgba(255,255,255,0.1); 
-            color: #fff; 
-            font-size: 16px;
-            margin-bottom: 20px;
-            outline: none;
-        }
-        button { 
-            padding: 15px 30px; 
-            border-radius: 10px; 
-            background: #e94560; 
-            color: #fff; 
-            border: none; 
-            cursor: pointer; 
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        button:hover { transform: scale(1.05); background: #ff4d6d; }
-        #resultArea { 
-            margin-top: 30px; 
-            padding: 20px; 
-            min-height: 120px; 
-            color: #fff; 
-            line-height: 1.8;
-            text-align: left;
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-        }
-    </script>
+    <title>AI天然石鑑定テスト</title>
 </head>
-<body>
-    <div class="container">
-        <h1>🔮 AI天然石鑑定</h1>
-        <p style="color: #ccc;">石の名前や、今のお悩みを聞かせてください</p>
-        
-        <input type="text" id="stoneInput" placeholder="例：ラピスラズリ、仕事で成功したい">
-        <br>
-        <button onclick="execute()">石の声を聴く</button>
-        
-        <div id="resultArea">※ここに鑑定結果が表示されます</div>
-    </div>
+<body style="background-color: black; color: white; text-align: center; padding-top: 50px;">
+    <h1>✨ AI鑑定 動作確認中 ✨</h1>
+    <p>画面が見えていれば、第一段階はクリアです。</p>
+    
+    <input type="text" id="stoneInput" value="水晶">
+    <button id="testBtn" style="padding: 10px 20px;">鑑定ボタン</button>
+    
+    <div id="resultArea" style="margin-top: 30px; color: yellow;"></div>
 
     <script>
-        // 【重要】ここに新しいプロジェクト(...2896)のAPIキーを正確に貼ってください
-        const KEY = 'AIzaSyD6zFfwmA41hvoEHwE9rCjjwfqh6eiWIbY'; 
-
-        async function execute() {
-            const resArea = document.getElementById('resultArea');
-            const input = document.getElementById('stoneInput').value.trim();
-            if (!input) return alert('入力してください');
-
-            resArea.innerHTML = '✨ 石の記憶にアクセス中...';
-
-            // 2026年3月最新の無料枠用エンドポイント
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${KEY}`;
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ 
-                            parts: [{ text: input + "について、石の鑑定士として石言葉と癒やしのメッセージを150文字以内で語りかけて。" }] 
-                        }]
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-
-                if (!data.candidates || data.candidates.length === 0) {
-                    throw new Error("石が沈黙しています（AIの応答が空です）");
-                }
-
-                const text = data.candidates[0].content.parts[0].text;
-                resArea.innerHTML = text.replace(/\n/g, '<br>');
-
-            } catch (e) {
-                resArea.innerHTML = `<span style="color:#ffb3b3;">鑑定エラー：<br>${e.message}</span>`;
-            }
-        }
+        // ボタンが押せるかどうかのテスト
+        document.getElementById('testBtn').onclick = function() {
+            document.getElementById('resultArea').innerHTML = 'ボタンは正常に動いています。キーを正しく入れれば完了です。';
+        };
     </script>
 </body>
 </html>
