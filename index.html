@@ -1,32 +1,63 @@
 <!DOCTYPE html>
 <html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 AI天然石鑑定所</title>
+    <style>
+        body { background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%); color: white; text-align: center; font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .card { background: rgba(255, 255, 255, 0.05); padding: 40px; border-radius: 20px; backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 15px 35px rgba(0,0,0,0.5); max-width: 450px; width: 90%; }
+        h1 { color: #fff; text-shadow: 0 0 15px #e94560; margin-bottom: 10px; }
+        p { color: #ccc; font-size: 14px; margin-bottom: 25px; }
+        input { padding: 15px; width: 80%; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: #fff; font-size: 16px; margin-bottom: 20px; outline: none; text-align: center; }
+        button { padding: 15px 40px; border-radius: 10px; background: #e94560; color: #fff; border: none; cursor: pointer; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4); transition: 0.3s; }
+        button:hover { transform: translateY(-2px); background: #ff4d6d; }
+        #resultArea { margin-top: 30px; padding: 20px; min-height: 100px; color: #00ffcc; line-height: 1.8; text-align: left; background: rgba(0,0,0,0.3); border-radius: 10px; font-size: 15px; border-left: 4px solid #e94560; }
+    </style>
+</head>
 <body>
-    <h1>AI鑑定テスト</h1>
-    <input type="text" id="stone" value="水晶">
-    <button onclick="check()">鑑定実行</button>
-    <div id="out" style="color:red; font-weight:bold; margin-top:20px;"></div>
+    <div class="card">
+        <h1>🔮 AI天然石鑑定</h1>
+        <p>石の名前を唱えれば、その魂の声を届けます</p>
+        
+        <input type="text" id="stoneInput" placeholder="例：ラピスラズリ、アメジスト">
+        <br>
+        <button onclick="execute()">石の声を聴く</button>
+        
+        <div id="resultArea">※ここに石からのメッセージが表示されます</div>
+    </div>
 
     <script>
-        const KEY = 'AIzaSyCAZ-uhjNWnjQXN4uV9a0_2UyF7xmLajO4';
+        // 【成功したキーをここに貼ってください】
+        const KEY = 'AIzaSyCAZ-uhjNWnjQXN4uV9a0_2UyF7xmLajO4'; 
 
-        async function check() {
-            const out = document.getElementById('out');
-            out.innerHTML = "通信中...";
-            // 2026年3月現在、最も安定している「v1beta」エンドポイント
+        async function execute() {
+            const resArea = document.getElementById('resultArea');
+            const input = document.getElementById('stoneInput').value.trim();
+            if (!input) return alert('石の名前を入力してください');
+
+            resArea.innerHTML = '✨ 石の記憶にアクセス中...';
+
+            // 成功したエンドポイント
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
-            
+
             try {
-                const res = await fetch(url, {
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: "水晶の石言葉を10文字で" }] }] })
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: input + "という天然石について、石の鑑定士として石言葉と、持ち主への癒やしのメッセージを150文字以内で優しく語りかけて。" }] }]
+                    })
                 });
-                const data = await res.json();
+
+                const data = await response.json();
                 if (data.error) throw new Error(data.error.message);
-                out.style.color = "blue";
-                out.innerHTML = "成功！結果：" + data.candidates[0].content.parts[0].text;
+
+                const text = data.candidates[0].content.parts[0].text;
+                resArea.innerHTML = text.replace(/\n/g, '<br>');
+
             } catch (e) {
-                out.innerHTML = "エラー原因：" + e.message;
+                resArea.innerHTML = `<span style="color:#ffb3b3;">鑑定エラー：${e.message}</span>`;
             }
         }
     </script>
