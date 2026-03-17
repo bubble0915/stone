@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>石のつぶやきAI</title>
     <style>
-        /* 初代デザインの完全再現 */
+        /* 1番目のデザイン：紺色グラデーションと赤ピンクのボタン */
         body { 
             background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%); 
             color: #e94560; 
@@ -20,19 +20,19 @@
         }
         .container {
             max-width: 500px;
-            width: 90%;
+            width: 95%;
             background: rgba(255, 255, 255, 0.05);
             padding: 40px 30px;
-            border-radius: 25px;
-            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        h1 { color: #fff; text-shadow: 0 0 15px #e94560; margin-bottom: 25px; font-weight: bold; }
+        h1 { color: #fff; text-shadow: 0 0 10px #e94560; margin-bottom: 25px; }
         input { 
             padding: 15px; 
             width: 85%; 
-            border-radius: 12px; 
+            border-radius: 10px; 
             border: none; 
             background: rgba(255,255,255,0.1); 
             color: #fff; 
@@ -43,7 +43,7 @@
         }
         button { 
             padding: 15px 40px; 
-            border-radius: 50px; 
+            border-radius: 10px; 
             background: #e94560; 
             color: #fff; 
             border: none; 
@@ -57,10 +57,10 @@
             padding: 20px; 
             min-height: 120px; 
             color: #e0e0e0; 
-            line-height: 1.8;
+            line-height: 2;
             text-align: left;
             background: rgba(0,0,0,0.3);
-            border-radius: 15px;
+            border-radius: 10px;
             font-size: 15px;
         }
     </style>
@@ -68,17 +68,16 @@
 <body>
     <div class="container">
         <h1>✨ 石のつぶやきAI</h1>
-        <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">あなたの心と、石を繋ぎます</p>
+        <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">あなたの心に、石の言葉をそっと届けます</p>
         
-        <input type="text" id="stoneInput" placeholder="例：水晶、最近疲れ気味...">
+        <input type="text" id="stoneInput" placeholder="例：ラピスラズリ、仕事で成功したい">
         <br>
         <button onclick="execute()">石の声を聴く</button>
         
-        <div id="resultArea">※ここに鑑定結果が優しく現れます</div>
+        <div id="resultArea">※ここに優しいつぶやきが現れます</div>
     </div>
 
     <script>
-        // あなたの有効なAPIキー
         const KEY = 'AIzaSyCAZ-uhjNWnjQXN4uV9a0_2UyF7xmLajO4';
 
         async function execute() {
@@ -86,10 +85,10 @@
             const input = document.getElementById('stoneInput').value.trim();
             if(!input) return;
 
-            out.innerHTML = '✨ 石が言葉を探しています...';
+            out.innerHTML = '✨ 石があなたの想いを受け止めています...';
 
-            // エラーを物理的に回避するため、最も標準的なモデル名に固定
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
+            // さきほど成功した「8b」モデルを名指しで指定
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${KEY}`;
 
             try {
                 const response = await fetch(url, {
@@ -97,17 +96,17 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ 
-                            parts: [{ text: "あなたは謙虚で寄り添うような言葉遣いの石の鑑定士です。決して偉そうにせず、親身な態度で、" + input + "の石言葉とメッセージを150文字以内で優しくつぶやいてください。" }] 
+                            parts: [{ text: "あなたは謙虚で心優しい天然石鑑定士です。決して偉そうにせず、相談者に寄り添う言葉遣いで、" + input + "についての石言葉と、持ち主が前向きになれるようなメッセージを150文字以内で優しく語りかけてください。" }] 
                         }]
                     })
                 });
 
                 const data = await response.json();
-
-                // モデル名エラーが起きた場合の予備回路
+                
+                // もし「8b」でもダメな場合の究極の保険：名前を「gemini-1.5-flash」にして再試行
                 if (data.error) {
-                    const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${KEY}`;
-                    const res2 = await fetch(fallbackUrl, {
+                    const retryUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
+                    const res2 = await fetch(retryUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ contents: [{ parts: [{ text: input + "の石言葉を優しく教えて。" }] }] })
@@ -120,7 +119,7 @@
                 }
 
             } catch (e) {
-                out.innerHTML = "申し訳ありません。石のつぶやきが届きませんでした。もう一度だけ、静かにボタンを押してみてください。";
+                out.innerHTML = "石のつぶやきが届きませんでした。もう一度だけ、優しくボタンを押してみてください。";
             }
         }
     </script>
