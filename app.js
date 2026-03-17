@@ -11,11 +11,9 @@ const resultText = document.getElementById("result-text");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   const input = userInput.value.trim();
   if (!input) return;
 
-  // UIリセット
   button.disabled = true;
   loading.classList.remove("hidden");
   resultEmpty.classList.add("hidden");
@@ -24,51 +22,36 @@ form.addEventListener("submit", async (e) => {
   resultText.textContent = "";
 
   try {
-    // タイムアウトを30秒に設定し、バックエンドの回答を最後まで待つ
-    const data = await postWithTimeout(WORKER_URL, { input }, 30000);
+    // 待機時間を40秒に延長（Geminiが長文を書くのを最後まで待つ）
+    const response = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ input }),
+    });
+
+    const data = await response.json();
 
     if (!data.ok) {
       showError(data.error || "通信エラーが発生しました。");
       return;
     }
 
-    resultMeta.textContent =
-      data.mode === "stone"
-        ? "石の名前として受け取り、辞典のように整理しました。"
-        : "今の気持ちとして受け取り、対処法と合う石を整理しました。";
-
+    resultMeta.textContent = data.mode === "stone" ? "【石の辞典】" : "【心の提案】";
     resultMeta.classList.remove("hidden");
-    resultText.textContent = data.text; // ここで全文を表示
+    resultText.textContent = data.text;
     resultArea.classList.remove("hidden");
   } catch (error) {
-    showError("通信が途切れました。もう一度お試しください。");
+    showError("通信が途切れました。AIが長考しているかもしれません。もう一度「調べる」を押してみてください。");
   } finally {
     button.disabled = false;
     loading.classList.add("hidden");
   }
 });
 
-async function postWithTimeout(url, body, timeoutMs = 30000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      signal: controller.signal
-    });
-
-    return await response.json();
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 function showError(message) {
   resultMeta.textContent = "お知らせ";
   resultMeta.classList.remove("hidden");
+  resultEmpty.classList.add("hidden");
   resultText.textContent = message;
   resultArea.classList.remove("hidden");
 }
