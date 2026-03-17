@@ -5,43 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>石のつぶやきAI</title>
     <style>
-        /* ここからがCSS（デザイン）です */
         body {
-            margin: 0; padding: 0;
-            background: #000;
-            color: #fff;
+            margin: 0; padding: 0; background: #000; color: #fff;
             font-family: "Hiragino Mincho ProN", "MS Mincho", serif;
             display: flex; align-items: center; justify-content: center;
             min-height: 100vh; overflow: hidden;
         }
-        /* 幻想的な光の背景 */
         .aura {
             position: fixed; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at 50% 50%, #1a1b4b 0%, #000 80%);
+            background: radial-gradient(circle at 50% 50%, #1a1b4b 0%, #000 85%);
             z-index: -1;
         }
         .container {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(25px);
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(30px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 40px;
-            padding: 60px 40px;
-            width: 85%; max-width: 400px;
-            text-align: center;
-            box-shadow: 0 0 60px rgba(0,0,0,1), inset 0 0 20px rgba(255,255,255,0.05);
+            border-radius: 40px; padding: 60px 40px;
+            width: 85%; max-width: 400px; text-align: center;
+            box-shadow: 0 0 60px rgba(0,0,0,1);
         }
         h1 {
-            font-size: 24px; letter-spacing: 8px; margin-bottom: 40px;
-            font-weight: 200; color: #fff; text-shadow: 0 0 15px #66f;
+            font-size: 26px; letter-spacing: 6px; margin-bottom: 40px;
+            font-weight: normal; color: #fff; text-shadow: 0 0 15px rgba(100, 100, 255, 0.8);
         }
         input {
             width: 100%; background: transparent; border: none;
             border-bottom: 1px solid rgba(255, 255, 255, 0.3);
             padding: 15px 0; color: #fff; font-size: 18px;
             outline: none; text-align: center; margin-bottom: 40px;
-            transition: 0.5s;
         }
-        input:focus { border-bottom: 1px solid #fff; }
         button {
             background: none; border: 1px solid #fff; color: #fff;
             padding: 15px 50px; border-radius: 100px; cursor: pointer;
@@ -73,33 +65,37 @@
             const input = document.getElementById('stoneInput').value.trim();
             if(!input) return;
 
-            out.innerHTML = '✨ 石の記憶を呼び覚ましています...';
-
-            // エラーを回避するため、さきほど「動いた」ときと同じ、もっとも通るエンドポイントを指定
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${KEY}`;
+            out.innerHTML = '✨ 石の記憶と通信中...';
 
             try {
-                const response = await fetch(url, {
+                // 【手順1】あなたのキーで、今この瞬間に動かせるモデルを直接Googleに聞く
+                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${KEY}`);
+                const listData = await listRes.json();
+                
+                // 【手順2】「generateContent」ができるモデルを1つ見つける（gemini-1.5-flashなど）
+                const validModel = listData.models.find(m => m.supportedGenerationMethods.includes('generateContent'));
+                
+                if (!validModel) throw new Error("使用可能なモデルがありません。API設定を確認してください。");
+
+                // 【手順3】Googleが「これならいいよ」と言ったその名前をそのまま使って送信
+                const runUrl = `https://generativelanguage.googleapis.com/v1beta/${validModel.name}:generateContent?key=${KEY}`;
+                
+                const response = await fetch(runUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: input + "という天然石について、石の神託者として、石言葉と癒やしのメッセージを150文字以内で語って。" }] }]
+                        contents: [{ parts: [{ text: input + "について、石の神託者として石言葉とメッセージを150文字以内で語って。" }] }]
                     })
                 });
 
                 const data = await response.json();
-                
-                if (data.error) {
-                    // エラーが出た場合のみ、原因を表示する
-                    out.innerHTML = "【通信不備】" + data.error.message;
-                    return;
-                }
+                if (data.error) throw new Error(data.error.message);
 
                 const text = data.candidates[0].content.parts[0].text;
                 out.innerHTML = text.replace(/\n/g, '<br>');
 
             } catch (e) {
-                out.innerHTML = "【接続失敗】Google側が混み合っているようです。";
+                out.innerHTML = "【通信不備】" + e.message + "<br><br>※このエラーが出る場合は、キーの反映に時間がかかっています。5分後に再度お試しください。";
             }
         }
     </script>
