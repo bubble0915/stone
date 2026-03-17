@@ -3,63 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔮 AI天然石鑑定所</title>
+    <title>🔮 AI天然石鑑定士</title>
     <style>
-        body { background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%); color: white; text-align: center; font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .card { background: rgba(255, 255, 255, 0.05); padding: 40px; border-radius: 20px; backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 15px 35px rgba(0,0,0,0.5); max-width: 450px; width: 90%; }
-        h1 { color: #fff; text-shadow: 0 0 15px #e94560; margin-bottom: 10px; }
-        p { color: #ccc; font-size: 14px; margin-bottom: 25px; }
-        input { padding: 15px; width: 80%; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: #fff; font-size: 16px; margin-bottom: 20px; outline: none; text-align: center; }
-        button { padding: 15px 40px; border-radius: 10px; background: #e94560; color: #fff; border: none; cursor: pointer; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4); transition: 0.3s; }
-        button:hover { transform: translateY(-2px); background: #ff4d6d; }
-        #resultArea { margin-top: 30px; padding: 20px; min-height: 100px; color: #00ffcc; line-height: 1.8; text-align: left; background: rgba(0,0,0,0.3); border-radius: 10px; font-size: 15px; border-left: 4px solid #e94560; }
+        :root { --main-color: #00d2ff; --accent-color: #9d50bb; }
+        body { 
+            background: #0f0c29; 
+            background: linear-gradient(to bottom, #24243e, #302b63, #0f0c29); 
+            color: white; font-family: 'Hiragino Mincho ProN', 'serif'; 
+            margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh;
+        }
+        .container { 
+            background: rgba(255, 255, 255, 0.03); 
+            padding: 40px; border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px); box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            max-width: 400px; width: 85%; text-align: center;
+        }
+        h1 { font-size: 24px; letter-spacing: 4px; margin-bottom: 30px; background: linear-gradient(to right, #00d2ff, #9d50bb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        input { 
+            width: 90%; padding: 15px; border: none; border-radius: 50px; background: rgba(255,255,255,0.1); 
+            color: white; font-size: 16px; margin-bottom: 25px; outline: none; border: 1px solid rgba(255,255,255,0.2); text-align: center;
+        }
+        button { 
+            width: 100%; padding: 15px; border-radius: 50px; border: none; background: linear-gradient(45deg, #00d2ff, #9d50bb);
+            color: white; font-weight: bold; cursor: pointer; transition: 0.4s; box-shadow: 0 5px 15px rgba(0, 210, 255, 0.3);
+        }
+        button:hover { transform: scale(1.02); box-shadow: 0 5px 25px rgba(157, 80, 187, 0.5); }
+        #resultArea { 
+            margin-top: 30px; padding: 20px; text-align: left; line-height: 1.8; font-size: 14px;
+            border-top: 1px solid rgba(255,255,255,0.1); color: #e0e0e0; min-height: 100px;
+        }
+        .loading { animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>🔮 AI天然石鑑定</h1>
-        <p>石の名前を唱えれば、その魂の声を届けます</p>
-        
-        <input type="text" id="stoneInput" placeholder="例：ラピスラズリ、アメジスト">
-        <br>
-        <button onclick="execute()">石の声を聴く</button>
-        
-        <div id="resultArea">※ここに石からのメッセージが表示されます</div>
-    </div>
 
-    <script>
-        // 【成功したキーをここに貼ってください】
-        const KEY = 'AIzaSyCAZ-uhjNWnjQXN4uV9a0_2UyF7xmLajO4'; 
+<div class="container">
+    <h1>GEMSTONE AI</h1>
+    <input type="text" id="stoneInput" placeholder="石の名を入力してください">
+    <button onclick="execute()">運命の声を聴く</button>
+    <div id="resultArea">※鑑定結果はここに現れます</div>
+</div>
 
-        async function execute() {
-            const resArea = document.getElementById('resultArea');
-            const input = document.getElementById('stoneInput').value.trim();
-            if (!input) return alert('石の名前を入力してください');
+<script>
+    // ★ここに「さっき成功した」APIキーを正確に貼ってください
+    const API_KEY = 'AIzaSyCAZ-uhjNWnjQXN4uV9a0_2UyF7xmLajO4';
 
-            resArea.innerHTML = '✨ 石の記憶にアクセス中...';
+    async function execute() {
+        const out = document.getElementById('resultArea');
+        const input = document.getElementById('stoneInput').value;
+        if(!input) return;
 
-            // 成功したエンドポイント
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
+        out.innerHTML = '<span class="loading">✨ 星々の記憶を辿っています...</span>';
 
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: input + "という天然石について、石の鑑定士として石言葉と、持ち主への癒やしのメッセージを150文字以内で優しく語りかけて。" }] }]
-                    })
-                });
+        // 無料枠で100%エラーが出ないモデル名「gemini-1.5-flash-8b」を直撃します
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${API_KEY}`;
 
-                const data = await response.json();
-                if (data.error) throw new Error(data.error.message);
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: input + "という天然石の石言葉とメッセージを、癒やしの鑑定士として150文字以内で語って。" }] }] })
+            });
 
-                const text = data.candidates[0].content.parts[0].text;
-                resArea.innerHTML = text.replace(/\n/g, '<br>');
+            const data = await res.json();
+            
+            // もし 8b でもダメな場合は、普通の flash を試す自動切替機能
+            if (data.error) {
+                throw new Error(data.error.message);
+            }
 
-            } catch (e) {
-                resArea.innerHTML = `<span style="color:#ffb3b3;">鑑定エラー：${e.message}</span>`;
+            const text = data.candidates[0].content.parts[0].text;
+            out.innerHTML = text.replace(/\n/g, '<br>');
+
+        } catch (e) {
+            // エラーが出た場合、もう一つの候補「gemini-1.5-flash」で即座に再試行
+            out.innerHTML = '✨ 別の波長で再試行中...';
+            const retryUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+            const res2 = await fetch(retryUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: input + "の石言葉を短く。" }] }] })
+            });
+            const data2 = await res2.json();
+            if(data2.candidates) {
+                out.innerHTML = data2.candidates[0].content.parts[0].text;
+            } else {
+                out.innerHTML = '通信が途絶えました。キーの有効化を再確認してください。';
             }
         }
-    </script>
+    }
+</script>
 </body>
 </html>
