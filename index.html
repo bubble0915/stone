@@ -2,36 +2,38 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>AI天然石鑑定</title>
-    <style>
-        body { background: #16213e; color: white; text-align: center; font-family: sans-serif; padding-top: 50px; }
-        .box { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; display: inline-block; }
-        input { padding: 10px; width: 200px; }
-        button { padding: 10px; cursor: pointer; background: #e94560; color: white; border: none; }
-        #resultArea { margin-top: 20px; white-space: pre-wrap; color: #00ffcc; }
-    </style>
+    <title>AI天然石鑑定士</title>
 </head>
-<body>
-
-    <div class="box">
-        <h1>🔮 石の鑑定所</h1>
-        <input type="text" id="stoneInput" placeholder="石の名前を入力">
-        <button onclick="execute()">鑑定する</button>
-        <div id="resultArea">ここに結果が出ます</div>
+<body style="background-color: #16213e; color: white; text-align: center; padding-top: 50px; font-family: sans-serif;">
+    
+    <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px; display: inline-block; min-width: 300px;">
+        <h1>🔮 AI天然石鑑定所</h1>
+        <p>石の名前や悩みを入力してください</p>
+        
+        <input type="text" id="stoneInput" placeholder="例：水晶、金運を上げたい" style="padding: 10px; width: 200px; border-radius: 5px; border: none;">
+        <button id="execBtn" style="padding: 10px 20px; border-radius: 5px; background: #e94560; color: white; border: none; cursor: pointer; font-weight: bold;">石の声を聴く</button>
+        
+        <div id="resultArea" style="margin-top: 30px; color: #00ffcc; line-height: 1.6; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
+            ※ここに鑑定結果が表示されます
+        </div>
     </div>
 
     <script>
-        // 【重要】APIキーを '' の間に貼り付けてください
+        // 【重要】ここに新しいプロジェクト(...2896)のAPIキーを正確に貼ってください
         const KEY = 'AIzaSyD6zFfwmA41hvoEHwE9rCjjwfqh6eiWIbY'; 
 
-        async function execute() {
+        document.getElementById('execBtn').onclick = async function() {
             const resArea = document.getElementById('resultArea');
-            const input = document.getElementById('stoneInput').value;
-            if (!input) return;
+            const input = document.getElementById('stoneInput').value.trim();
+            
+            if (!input) {
+                alert('何か入力してください');
+                return;
+            }
 
-            resArea.innerHTML = '✨ 共鳴中...';
+            resArea.innerHTML = '✨ 石の記憶にアクセス中...';
 
-            // 最新の無料枠用URL
+            // 最新の無料枠用URL (v1beta)
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${KEY}`;
 
             try {
@@ -39,18 +41,23 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: input + "について石言葉を教えて" }] }]
+                        contents: [{ parts: [{ text: input + "について、石の鑑定士として石言葉と癒やしのメッセージを150文字以内で答えて。" }] }]
                     })
                 });
 
                 const data = await response.json();
-                if (data.error) throw new Error(data.error.message);
-                
-                resArea.innerHTML = data.candidates[0].content.parts[0].text;
+
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
+                const text = data.candidates[0].content.parts[0].text;
+                resArea.innerHTML = text.replace(/\n/g, '<br>');
+
             } catch (e) {
-                resArea.innerHTML = "エラー: " + e.message;
+                resArea.innerHTML = '<span style="color: #ffb3b3;">鑑定失敗: ' + e.message + '</span>';
             }
-        }
+        };
     </script>
 </body>
 </html>
