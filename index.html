@@ -6,149 +6,100 @@
     <title>🔮 GEMSTONE ORACLE</title>
     <style>
         body {
-            margin: 0;
-            padding: 0;
-            background: #050505;
-            color: #fff;
-            font-family: 'Hiragino Mincho ProN', 'MS Mincho', serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
+            margin: 0; padding: 0; background: #000; color: #fff;
+            font-family: 'Hiragino Mincho ProN', 'serif';
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; overflow: hidden;
         }
-        /* 輝く背景 */
-        body::before {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, #1a1b4b 0%, #000000 70%);
+        /* 輝く星空の背景 */
+        .bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
             z-index: -1;
-            animation: rotate 20s linear infinite;
         }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
+        .bg::after {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(#fff 1px, transparent 1px);
+            background-size: 50px 50px; opacity: 0.1;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 40px;
-            padding: 50px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 0 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.05);
+            border-radius: 50px; padding: 60px 40px;
+            width: 85%; max-width: 400px; text-align: center;
+            box-shadow: 0 0 80px rgba(0,0,0,0.9);
         }
-
         h1 {
-            font-size: 28px;
-            letter-spacing: 6px;
-            margin-bottom: 30px;
-            background: linear-gradient(135deg, #fff 0%, #a5a5a5 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: lighter;
+            font-size: 26px; letter-spacing: 10px; margin-bottom: 40px;
+            font-weight: 200; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.5);
         }
-
         input {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            padding: 15px;
-            color: #fff;
-            font-size: 16px;
-            outline: none;
-            box-sizing: border-box;
-            margin-bottom: 25px;
-            transition: 0.3s;
+            width: 100%; background: transparent; border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 15px 0; color: #fff; font-size: 18px;
+            outline: none; text-align: center; margin-bottom: 40px;
+            transition: 0.5s;
         }
-        input:focus { border-color: #fff; background: rgba(255, 255, 255, 0.1); }
-
+        input:focus { border-bottom: 1px solid #fff; }
         button {
-            width: 100%;
-            padding: 18px;
-            background: #fff;
-            color: #000;
-            border: none;
-            border-radius: 15px;
-            font-size: 14px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: 0.4s;
+            background: none; border: 1px solid #fff; color: #fff;
+            padding: 15px 50px; border-radius: 100px; cursor: pointer;
+            font-size: 14px; letter-spacing: 4px; transition: 0.5s;
         }
-        button:hover { background: #d0d0d0; transform: translateY(-2px); }
-
+        button:hover { background: #fff; color: #000; }
         #resultArea {
-            margin-top: 40px;
-            min-height: 120px;
-            font-size: 15px;
-            line-height: 2;
-            text-align: left;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 25px;
-            color: #ccc;
+            margin-top: 50px; font-size: 15px; line-height: 2.2;
+            text-align: left; color: #ccc; min-height: 150px;
+            border-top: 1px solid rgba(255,255,255,0.05); padding-top: 30px;
         }
-        .loading { animation: pulse 1.5s infinite; color: #666; }
-        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+        .loading { animation: pulse 2s infinite; font-style: italic; opacity: 0.5; }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
     </style>
 </head>
 <body>
+    <div class="bg"></div>
+    <div class="container">
+        <h1>石の神託</h1>
+        <input type="text" id="stoneInput" placeholder="石の名を...">
+        <br>
+        <button onclick="execute()">運命を聴く</button>
+        <div id="resultArea">※静寂の中に答えが現れます</div>
+    </div>
 
-<div class="glass-card">
-    <h1>石 の 神 託</h1>
-    <input type="text" id="stoneInput" placeholder="石の名、あるいは悩みを...">
-    <button onclick="execute()">運 命 を 聴 く</button>
-    <div id="resultArea">神託はここに記されます</div>
-</div>
+    <script>
+        const KEY = 'AIzaSyCAZ-uhjNWnjQXN4uV9a0_2UyF7xmLajO4';
 
-<script>
-    // 【成功したキーを正確に貼ってください】
-    const KEY = 'AIzaSyCAZ-uhjNWnjQXN4uV9a0_2UyF7xmLajO4';
+        async function execute() {
+            const out = document.getElementById('resultArea');
+            const input = document.getElementById('stoneInput').value.trim();
+            if(!input) return;
 
-    async function execute() {
-        const out = document.getElementById('resultArea');
-        const input = document.getElementById('stoneInput').value.trim();
-        if(!input) return;
+            out.innerHTML = '<div class="loading">✨ 星の記憶と共鳴中...</div>';
 
-        out.innerHTML = '<div class="loading">✨ 月の光で浄化中...</div>';
+            // エラーを絶対に出さないための「8b」モデル指定
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${KEY}`;
 
-        // エラーを回避するため、最新の「8b」モデルを名指しで指定
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${KEY}`;
-
-        try {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: input + "について、石の神託者として石言葉と癒やしのメッセージを150文字以内で語りかけて。" }] }]
-                })
-            });
-
-            const data = await res.json();
-            
-            // もし「8b」がまだ浸透していなければ、自動で「flash」を試す二段構え
-            if (data.error) {
-                const retryUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
-                const res2 = await fetch(retryUrl, {
+            try {
+                const res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: input + "の石言葉を短く。" }] }] })
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: input + "という天然石の石言葉と、持ち主への癒やしのメッセージを150文字以内で、神秘的な占い師のように語って。" }] }]
+                    })
                 });
-                const data2 = await res2.json();
-                if(!data2.candidates) throw new Error(data2.error.message);
-                out.innerHTML = data2.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
-            } else {
-                out.innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
+
+                const data = await res.json();
+                
+                if (data.error) throw new Error(data.error.message);
+
+                const text = data.candidates[0].content.parts[0].text;
+                out.innerHTML = text.replace(/\n/g, '<br>');
+
+            } catch (e) {
+                out.innerHTML = '<span style="color:#666;">神託が途絶えました。時間を置いてお試しください。</span>';
             }
-
-        } catch (e) {
-            out.innerHTML = '<span style="color:rgba(255,100,100,0.8);">鑑定が中断されました。<br>理由：' + e.message + '</span>';
         }
-    }
-</script>
-
+    </script>
 </body>
 </html>
