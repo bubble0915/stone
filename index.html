@@ -4,11 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>石のつぶやきAI</title>
-  <link rel="stylesheet" href="style.css?v=5" />
+  <link rel="stylesheet" href="style.css?v=10" />
 </head>
 <body>
   <div class="bg-glow"></div>
-
   <main class="app">
     <header class="hero">
       <div class="hero-badge">天然石辞典 × 気持ちに合う石提案</div>
@@ -23,11 +22,7 @@
       <form id="stone-form">
         <div class="field">
           <label for="user-input">石の名前、または今の気持ち</label>
-          <textarea
-            id="user-input"
-            placeholder="例1：アメジスト&#10;例2：最近疲れていて、心を落ち着かせたいです"
-            required
-          ></textarea>
+          <textarea id="user-input" placeholder="例1：アメジスト&#10;例2：最近疲れていて、心を落ち着かせたいです" required></textarea>
         </div>
         <button type="submit" id="send-button">調べる</button>
       </form>
@@ -38,17 +33,14 @@
         <h2>結果</h2>
         <p>石のつぶやきをすべて表示します</p>
       </div>
-
       <div id="loading" class="loading hidden">静かに読み取っています…</div>
       <div id="result-empty" class="empty-state">ここに結果が表示されます。</div>
       <div id="result-meta" class="result-meta hidden"></div>
-
       <div id="result-area" class="result-area hidden">
         <pre id="result-text"></pre>
       </div>
     </section>
   </main>
-
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>
