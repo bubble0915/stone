@@ -1,98 +1,48 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>石のつぶやきAI</title>
-    <style>
-        /* 1番目のデザインを完全再現 */
-        body { 
-            background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%); 
-            color: #e94560; 
-            text-align: center; 
-            font-family: 'Helvetica Neue', Arial, sans-serif; 
-            margin: 0; min-height: 100vh;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .container {
-            max-width: 500px; width: 90%;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 40px 30px; border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        h1 { color: #fff; text-shadow: 0 0 10px #e94560; margin-bottom: 25px; font-weight: bold; }
-        input { 
-            padding: 15px; width: 85%; border-radius: 10px; border: none; 
-            background: rgba(255,255,255,0.1); color: #fff; font-size: 16px;
-            margin-bottom: 25px; outline: none; text-align: center;
-        }
-        button { 
-            padding: 15px 40px; border-radius: 10px; background: #e94560; 
-            color: #fff; border: none; cursor: pointer; font-weight: bold;
-            transition: 0.3s;
-        }
-        button:hover { transform: scale(1.05); background: #ff4d6d; }
-        #resultArea { 
-            margin-top: 30px; padding: 20px; min-height: 120px; 
-            color: #e0e0e0; line-height: 2; text-align: left;
-            background: rgba(0,0,0,0.3); border-radius: 10px; font-size: 15px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>石のつぶやきAI</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="container">
-        <h1>✨ 石のつぶやきAI</h1>
-        <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">あなたの心に、石の言葉をそっと届けます</p>
-        <input type="text" id="stoneInput" placeholder="石の名や、今のお悩みを...">
-        <br>
-        <button onclick="execute()">石の声を聴く</button>
-        <div id="resultArea">※ここに優しいメッセージが届きます</div>
-    </div>
+  <div class="container">
+    <header class="header">
+      <h1>石のつぶやきAI</h1>
+      <p class="subtitle">天然石の声に、そっと耳をすませる小さな案内役</p>
+    </header>
 
-    <script>
-        const KEY = 'AIzaSyCAZ-uhjNWnjQXN4uV9a0_2UyF7xmLajO4';
+    <main class="card">
+      <p class="intro">
+        気になる天然石のことを、やさしくたずねてみてください。<br>
+        石の意味や雰囲気を、寄り添う言葉でお返しします。
+      </p>
 
-        async function execute() {
-            const out = document.getElementById('resultArea');
-            const input = document.getElementById('stoneInput').value.trim();
-            if(!input) return;
+      <form id="stone-form">
+        <label for="stone-input" class="label">ご相談内容</label>
+        <textarea
+          id="stone-input"
+          placeholder="例：ローズクォーツは今の私にどんなメッセージをくれますか？"
+          required
+        ></textarea>
 
-            out.innerHTML = '✨ 石の記憶を辿っています...';
+        <button type="submit" id="send-button">石にたずねる</button>
+      </form>
 
-            try {
-                // 1. まず、あなたのキーで今使えるモデルの名前をGoogleから「直接」取得する
-                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${KEY}`);
-                const listData = await listRes.json();
-                
-                if (listData.error) throw new Error(listData.error.message);
+      <section class="result-section">
+        <h2>石からのことば</h2>
+        <div id="stone-output" class="result-box">
+          ここにやさしいメッセージが表示されます。
+        </div>
+      </section>
+    </main>
 
-                // 2. 鑑定ができるモデルを自動で見つける
-                const target = listData.models.find(m => m.supportedGenerationMethods.includes('generateContent'));
-                
-                if (!target) throw new Error("利用可能なモデルが見つかりません。");
+    <footer class="footer">
+      <p>石のつぶやきAI</p>
+    </footer>
+  </div>
 
-                // 3. 見つかった「正しい名前」を使って鑑定を実行
-                const runUrl = `https://generativelanguage.googleapis.com/v1beta/${target.name}:generateContent?key=${KEY}`;
-                const runRes = await fetch(runUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ 
-                            parts: [{ text: "あなたは謙虚で心優しい鑑定士です。決して偉そうにせず、相談者に寄り添う言葉遣いで、" + input + "の石言葉と温かいメッセージを150文字以内で語りかけてください。" }] 
-                        }]
-                    })
-                });
-
-                const runData = await runRes.json();
-                const text = runData.candidates[0].content.parts[0].text;
-                out.innerHTML = text.replace(/\n/g, '<br>');
-
-            } catch (e) {
-                out.innerHTML = "【鑑定失敗】<br>原因: " + e.message + "<br><br>※これが出る場合はGoogle側の反映待ちです。5分後に再度お試しください。";
-            }
-        }
-    </script>
+  <script src="app.js"></script>
 </body>
 </html>
