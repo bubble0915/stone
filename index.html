@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>石のつぶやきAI</title>
     <style>
-        /* 初代デザインを100%再現 */
+        /* 1番目のデザインを完全再現 */
         body { 
             background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%); 
             color: #e94560; 
@@ -22,7 +22,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        h1 { color: #fff; text-shadow: 0 0 10px #e94560; margin-bottom: 25px; }
+        h1 { color: #fff; text-shadow: 0 0 10px #e94560; margin-bottom: 25px; font-weight: bold; }
         input { 
             padding: 15px; width: 85%; border-radius: 10px; border: none; 
             background: rgba(255,255,255,0.1); color: #fff; font-size: 16px;
@@ -44,7 +44,7 @@
 <body>
     <div class="container">
         <h1>✨ 石のつぶやきAI</h1>
-        <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">心優しき石の言葉を、あなたに届けます</p>
+        <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">あなたの心に、石の言葉をそっと届けます</p>
         <input type="text" id="stoneInput" placeholder="石の名や、今のお悩みを...">
         <br>
         <button onclick="execute()">石の声を聴く</button>
@@ -59,34 +59,38 @@
             const input = document.getElementById('stoneInput').value.trim();
             if(!input) return;
 
-            out.innerHTML = '✨ 石が言葉を紡いでいます...';
-
-            // エラー原因を解消：モデル名を最新の 8b に指定
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${KEY}`;
+            out.innerHTML = '✨ 石の記憶を辿っています...';
 
             try {
-                const response = await fetch(url, {
+                // 1. まず、あなたのキーで今使えるモデルの名前をGoogleから「直接」取得する
+                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${KEY}`);
+                const listData = await listRes.json();
+                
+                if (listData.error) throw new Error(listData.error.message);
+
+                // 2. 鑑定ができるモデルを自動で見つける
+                const target = listData.models.find(m => m.supportedGenerationMethods.includes('generateContent'));
+                
+                if (!target) throw new Error("利用可能なモデルが見つかりません。");
+
+                // 3. 見つかった「正しい名前」を使って鑑定を実行
+                const runUrl = `https://generativelanguage.googleapis.com/v1beta/${target.name}:generateContent?key=${KEY}`;
+                const runRes = await fetch(runUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ 
-                            parts: [{ text: "あなたは謙虚で、相談者の心に寄り添う優しい天然石鑑定士です。決して偉そうにせず、相手を敬う言葉遣いで、" + input + "の石言葉と、持ち主が前向きになれる温かいメッセージを150文字以内で語りかけてください。" }] 
+                            parts: [{ text: "あなたは謙虚で心優しい鑑定士です。決して偉そうにせず、相談者に寄り添う言葉遣いで、" + input + "の石言葉と温かいメッセージを150文字以内で語りかけてください。" }] 
                         }]
                     })
                 });
 
-                const data = await response.json();
-
-                if (data.error) {
-                    out.innerHTML = "石のつぶやきが届きませんでした。<br>原因: " + data.error.message;
-                    return;
-                }
-
-                const text = data.candidates[0].content.parts[0].text;
+                const runData = await runRes.json();
+                const text = runData.candidates[0].content.parts[0].text;
                 out.innerHTML = text.replace(/\n/g, '<br>');
 
             } catch (e) {
-                out.innerHTML = "通信がうまくいきませんでした。もう一度試してみてください。";
+                out.innerHTML = "【鑑定失敗】<br>原因: " + e.message + "<br><br>※これが出る場合はGoogle側の反映待ちです。5分後に再度お試しください。";
             }
         }
     </script>
