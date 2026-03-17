@@ -1,7 +1,7 @@
 :root {
   --bg1: #07122b;
   --bg2: #101f47;
-  --card: rgba(16, 28, 63, 0.88);
+  --card: rgba(16, 28, 63, 0.9);
   --card-border: rgba(255, 255, 255, 0.09);
   --text: #ffffff;
   --subtext: #d9defa;
@@ -21,8 +21,7 @@ body {
   font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
   color: var(--text);
   min-height: 100vh;
-  background:
-    linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+  background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
   overflow-x: hidden;
 }
 
@@ -95,9 +94,9 @@ body {
   color: var(--soft);
 }
 
-input,
 textarea {
   width: 100%;
+  min-height: 170px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.06);
@@ -105,23 +104,17 @@ textarea {
   padding: 14px;
   font-size: 1rem;
   outline: none;
+  resize: vertical;
+  line-height: 1.8;
 }
 
-input::placeholder,
 textarea::placeholder {
   color: #cfd6ff;
 }
 
-input:focus,
 textarea:focus {
   border-color: rgba(240, 109, 151, 0.9);
   box-shadow: 0 0 0 4px rgba(240, 109, 151, 0.14);
-}
-
-textarea {
-  min-height: 150px;
-  resize: vertical;
-  line-height: 1.8;
 }
 
 button {
