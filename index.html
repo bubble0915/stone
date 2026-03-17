@@ -3,69 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI天然石鑑定士</title>
+    <title>石のつぶやきAI</title>
     <style>
+        /* ここからがCSS（デザイン）です */
         body {
             margin: 0; padding: 0;
-            background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
-            color: #ffffff;
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+            background: #000;
+            color: #fff;
+            font-family: "Hiragino Mincho ProN", "MS Mincho", serif;
             display: flex; align-items: center; justify-content: center;
-            min-height: 100vh;
+            min-height: 100vh; overflow: hidden;
         }
-        /* あなたが求めていた「輝く背景」を演出するコンテナ */
+        /* 幻想的な光の背景 */
+        .aura {
+            position: fixed; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 50% 50%, #1a1b4b 0%, #000 80%);
+            z-index: -1;
+        }
         .container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(15px);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 25px;
-            padding: 40px;
-            width: 90%; max-width: 450px;
+            border-radius: 40px;
+            padding: 60px 40px;
+            width: 85%; max-width: 400px;
             text-align: center;
-            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 60px rgba(0,0,0,1), inset 0 0 20px rgba(255,255,255,0.05);
         }
         h1 {
-            font-size: 28px;
-            color: #fff;
-            text-shadow: 0 0 15px #66f; /* 水晶のような輝き */
-            margin-bottom: 30px;
+            font-size: 24px; letter-spacing: 8px; margin-bottom: 40px;
+            font-weight: 200; color: #fff; text-shadow: 0 0 15px #66f;
         }
         input {
-            width: 80%; padding: 15px; border-radius: 12px; border: none;
-            background: rgba(255, 255, 255, 0.1); color: #fff;
-            font-size: 16px; margin-bottom: 20px; outline: none;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+            width: 100%; background: transparent; border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 15px 0; color: #fff; font-size: 18px;
+            outline: none; text-align: center; margin-bottom: 40px;
+            transition: 0.5s;
         }
+        input:focus { border-bottom: 1px solid #fff; }
         button {
-            padding: 15px 40px; border-radius: 12px; border: none;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff; font-weight: bold; font-size: 16px;
-            cursor: pointer; transition: 0.3s;
-            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
+            background: none; border: 1px solid #fff; color: #fff;
+            padding: 15px 50px; border-radius: 100px; cursor: pointer;
+            font-size: 14px; letter-spacing: 4px; transition: 0.5s;
         }
-        button:hover { transform: translateY(-2px); filter: brightness(1.2); }
+        button:hover { background: #fff; color: #000; box-shadow: 0 0 20px #fff; }
         #resultArea {
-            margin-top: 30px; padding: 20px;
-            background: rgba(0, 0, 0, 0.2); border-radius: 15px;
-            min-height: 120px; text-align: left; line-height: 1.8;
-            color: #e0e0e0; font-size: 15px; border-left: 4px solid #667eea;
+            margin-top: 50px; font-size: 15px; line-height: 2.2;
+            text-align: left; color: #ccc; min-height: 150px;
+            border-top: 1px solid rgba(255,255,255,0.05); padding-top: 30px;
         }
     </style>
 </head>
 <body>
+    <div class="aura"></div>
     <div class="container">
-        <h1>✨ AI天然石鑑定士</h1>
-        <p style="color: #aaa; font-size: 14px; margin-bottom: 20px;">石の名前や今の悩みを入力してください</p>
-        
-        <input type="text" id="stoneInput" placeholder="例：ラピスラズリ">
+        <h1>石のつぶやきAI</h1>
+        <input type="text" id="stoneInput" placeholder="石の名を...">
         <br>
-        <button onclick="execute()">石の声を聴く</button>
-        
-        <div id="resultArea">ここに鑑定結果が表示されます</div>
+        <button onclick="execute()">運命を聴く</button>
+        <div id="resultArea">※静寂の中に答えが現れます</div>
     </div>
 
     <script>
-        // さきほど「動いた」成功キーです
         const KEY = 'AIzaSyCAZ-uhjNWnjQXN4uV9a0_2UyF7xmLajO4';
 
         async function execute() {
@@ -73,9 +73,9 @@
             const input = document.getElementById('stoneInput').value.trim();
             if(!input) return;
 
-            out.innerHTML = '✨ 石の記憶と共鳴中...';
+            out.innerHTML = '✨ 石の記憶を呼び覚ましています...';
 
-            // さきほど成功した「確実なURL」
+            // エラーを回避するため、さきほど「動いた」ときと同じ、もっとも通るエンドポイントを指定
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${KEY}`;
 
             try {
@@ -83,18 +83,23 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: input + "について、石の鑑定士として、石言葉と癒やしのメッセージを150文字以内で優しく語りかけて。" }] }]
+                        contents: [{ parts: [{ text: input + "という天然石について、石の神託者として、石言葉と癒やしのメッセージを150文字以内で語って。" }] }]
                     })
                 });
 
                 const data = await response.json();
-                if (data.error) throw new Error(data.error.message);
+                
+                if (data.error) {
+                    // エラーが出た場合のみ、原因を表示する
+                    out.innerHTML = "【通信不備】" + data.error.message;
+                    return;
+                }
 
                 const text = data.candidates[0].content.parts[0].text;
                 out.innerHTML = text.replace(/\n/g, '<br>');
 
             } catch (e) {
-                out.innerHTML = '<span style="color:#ffb3b3;">鑑定エラー：再試行してください</span>';
+                out.innerHTML = "【接続失敗】Google側が混み合っているようです。";
             }
         }
     </script>
