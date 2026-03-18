@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>石のつぶやきAI</title>
-  <link rel="stylesheet" href="style.css?v=5" />
+  <link rel="stylesheet" href="style.css?v=6" />
 </head>
 <body>
   <div class="bg-glow"></div>
@@ -15,7 +15,8 @@
       <h1>石のつぶやきAI</h1>
       <p class="hero-text">
         石の名前を入れると、辞典のように意味や効能をお返しします。<br>
-        今の気持ちを入れると、対処法と、その状況に合う石を最大3つご提案します。
+        今の気持ちを入れると、対処法と、その状況に合う石を最大3つご提案します。<br>
+        結果に合わせた石のイメージ画像も表示します。
       </p>
     </header>
 
@@ -44,12 +45,16 @@
       <div id="result-empty" class="empty-state">ここに結果が表示されます。</div>
       <div id="result-meta" class="result-meta hidden"></div>
 
+      <div id="image-wrap" class="image-wrap hidden">
+        <img id="stone-image" alt="石のイメージ画像" />
+      </div>
+
       <div id="result-area" class="result-area hidden">
         <pre id="result-text"></pre>
       </div>
     </section>
   </main>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
