@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>石のつぶやきAI</title>
-  <link rel="stylesheet" href="style.css?v=10" />
+  <link rel="stylesheet" href="style.css?v=11" />
 </head>
 <body>
   <div class="bg-glow"></div>
@@ -16,7 +16,7 @@
       <p class="hero-text">
         石の名前を入れると、天然石辞典のように意味や効能をお返しします。<br>
         今の気持ちを入れると、対処法と、その状況に合う石を最大3つご提案します。<br>
-        さらに、タロットによる補助診断として「今日の運勢」「今週の運勢」「恋愛運」「全体運」「3枚引き」にも対応しています。
+        タロットによる補助診断として「今日の運勢」「今週の運勢」「恋愛運」「全体運」「3枚引き」にも対応しています。
       </p>
     </header>
 
@@ -24,6 +24,18 @@
       <form id="stone-form">
         <div class="field">
           <label for="user-input">石の名前、今の気持ち、または占いメニュー</label>
+
+          <div class="quick-menu">
+            <p class="quick-menu-title">ワンタップメニュー</p>
+            <div class="quick-buttons">
+              <button type="button" class="quick-button" data-value="今日の運勢">今日の運勢</button>
+              <button type="button" class="quick-button" data-value="今週の運勢">今週の運勢</button>
+              <button type="button" class="quick-button" data-value="恋愛運">恋愛運</button>
+              <button type="button" class="quick-button" data-value="全体運">全体運</button>
+              <button type="button" class="quick-button" data-value="3枚引き">3枚引き</button>
+            </div>
+          </div>
+
           <textarea
             id="user-input"
             placeholder="例1：アメジスト&#10;例2：最近疲れていて、心を落ち着かせたいです&#10;例3：今日の運勢&#10;例4：3枚引き"
@@ -31,7 +43,9 @@
           ></textarea>
         </div>
 
-        <button type="submit" id="send-button">調べる</button>
+        <div class="action-row">
+          <button type="submit" id="send-button">調べる</button>
+        </div>
       </form>
     </section>
 
@@ -45,22 +59,18 @@
       <div id="result-empty" class="empty-state">ここに結果が表示されます。</div>
       <div id="result-meta" class="result-meta hidden"></div>
 
-      <!-- 石画像 -->
       <div id="image-wrap" class="image-wrap hidden">
         <img id="stone-image" alt="石のイメージ画像" />
       </div>
 
-      <!-- タロット画像 -->
       <div id="tarot-wrap" class="image-wrap hidden">
         <img id="tarot-image" alt="タロットカードのイメージ画像" />
       </div>
 
-      <!-- 結果本文 -->
       <div id="result-area" class="result-area hidden">
         <pre id="result-text"></pre>
       </div>
 
-      <!-- ショップ導線 -->
       <div id="shop-guide" class="shop-guide hidden">
         <h3>今回の結果に近い石を見てみる</h3>
         <p>
@@ -79,6 +89,6 @@
     </section>
   </main>
 
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>
