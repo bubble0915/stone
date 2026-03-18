@@ -4,29 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>石のつぶやきAI</title>
-  <link rel="stylesheet" href="style.css?v=8" />
+  <link rel="stylesheet" href="style.css?v=10" />
 </head>
 <body>
   <div class="bg-glow"></div>
 
   <main class="app">
     <header class="hero">
-      <div class="hero-badge">天然石辞典 × 気持ちに合う石提案</div>
+      <div class="hero-badge">天然石辞典 × 気持ち診断 × タロット補助診断</div>
       <h1>石のつぶやきAI</h1>
       <p class="hero-text">
-        石の名前を入れると、辞典のように意味や効能をお返しします。<br>
+        石の名前を入れると、天然石辞典のように意味や効能をお返しします。<br>
         今の気持ちを入れると、対処法と、その状況に合う石を最大3つご提案します。<br>
-        結果に合わせた石の実物風イメージ画像も表示します。
+        さらに、タロットによる補助診断として「今日の運勢」「今週の運勢」「恋愛運」「全体運」「3枚引き」にも対応しています。
       </p>
     </header>
 
     <section class="card input-card">
       <form id="stone-form">
         <div class="field">
-          <label for="user-input">石の名前、または今の気持ち</label>
+          <label for="user-input">石の名前、今の気持ち、または占いメニュー</label>
           <textarea
             id="user-input"
-            placeholder="例1：アメジスト&#10;例2：最近疲れていて、心を落ち着かせたいです"
+            placeholder="例1：アメジスト&#10;例2：最近疲れていて、心を落ち着かせたいです&#10;例3：今日の運勢&#10;例4：3枚引き"
             required
           ></textarea>
         </div>
@@ -38,17 +38,24 @@
     <section class="card result-card">
       <div class="result-header">
         <h2>結果</h2>
-        <p>返ってきた内容を全部そのまま表示します</p>
+        <p>返ってきた内容を最後までそのまま表示します</p>
       </div>
 
       <div id="loading" class="loading hidden">静かに読み取っています…</div>
       <div id="result-empty" class="empty-state">ここに結果が表示されます。</div>
       <div id="result-meta" class="result-meta hidden"></div>
 
+      <!-- 石画像 -->
       <div id="image-wrap" class="image-wrap hidden">
         <img id="stone-image" alt="石のイメージ画像" />
       </div>
 
+      <!-- タロット画像 -->
+      <div id="tarot-wrap" class="image-wrap hidden">
+        <img id="tarot-image" alt="タロットカードのイメージ画像" />
+      </div>
+
+      <!-- 結果本文 -->
       <div id="result-area" class="result-area hidden">
         <pre id="result-text"></pre>
       </div>
@@ -72,6 +79,6 @@
     </section>
   </main>
 
-  <script src="app.js?v=8"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>
