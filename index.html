@@ -10,7 +10,7 @@
         input { width: 100%; padding: 12px; margin: 20px 0; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
         button { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; transition: 0.3s; }
         button:hover { background: #764ba2; }
-        #result { margin-top: 30px; text-align: left; white-space: pre-wrap; color: #555; line-height: 1.6; font-size: 15px; }
+        #result { margin-top: 30px; text-align: left; white-space: pre-wrap; color: #555; line-height: 1.6; font-size: 15px; border-top: 1px solid #eee; padding-top: 20px; }
     </style>
 </head>
 <body>
@@ -31,13 +31,15 @@
             resDiv.innerText = "石と対話中...";
 
             try {
-                // ★ばぶるさんのWorkerのURLをここに入れてください
-                const WORKER_URL = "ここにWorkerのURLを貼る";
+                // ★ばぶるさんのURLをここに直接埋め込みました！
+                const WORKER_URL = "https://stone-01.its-brg77.workers.dev";
                 
                 const response = await fetch(WORKER_URL, {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ input: input })
                 });
+                
                 const data = await response.json();
 
                 if (data.ok) {
@@ -46,7 +48,7 @@
                     resDiv.innerText = "エラー: " + data.error;
                 }
             } catch (e) {
-                resDiv.innerText = "接続に失敗しました。URLを確認してください。";
+                resDiv.innerText = "接続に失敗しました。Workerが「Save and Deploy」されているか確認してください。";
             }
         }
     </script>
