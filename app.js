@@ -30,7 +30,7 @@ form.addEventListener("submit", async (e) => {
   stoneImage.removeAttribute("src");
 
   try {
-    const data = await postWithTimeout(WORKER_URL, { input }, 45000);
+    const data = await postWithTimeout(WORKER_URL, { input }, 60000);
 
     if (!data.ok) {
       showError(data.error || "通信エラーが発生しました。");
@@ -59,7 +59,7 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-async function postWithTimeout(url, body, timeoutMs = 45000) {
+async function postWithTimeout(url, body, timeoutMs = 60000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
