@@ -20,6 +20,16 @@ const shopGuideTitle = shopGuide ? shopGuide.querySelector("h3") : null;
 const shopGuideText = shopGuide ? shopGuide.querySelector("p") : null;
 const shopGuideLink = shopGuide ? shopGuide.querySelector("a") : null;
 
+const quickButtons = document.querySelectorAll(".quick-button");
+
+quickButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const value = btn.dataset.value || "";
+    userInput.value = value;
+    userInput.focus();
+  });
+});
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -32,6 +42,7 @@ form.addEventListener("submit", async (e) => {
   resetBeforeRequest();
 
   button.disabled = true;
+  setQuickButtonsDisabled(true);
   loading.classList.remove("hidden");
 
   try {
@@ -67,6 +78,7 @@ form.addEventListener("submit", async (e) => {
     showError("通信が止まってしまいました。少し時間をおいて、もう一度お試しください。");
   } finally {
     button.disabled = false;
+    setQuickButtonsDisabled(false);
     loading.classList.add("hidden");
   }
 });
@@ -92,6 +104,12 @@ async function postWithTimeout(url, body, timeoutMs = 120000) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+function setQuickButtonsDisabled(disabled) {
+  quickButtons.forEach((btn) => {
+    btn.disabled = disabled;
+  });
 }
 
 function resetBeforeRequest() {
