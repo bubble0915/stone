@@ -2,10 +2,9 @@ const WORKER_URL = "https://stone-01.its-brg77.workers.dev";
 
 const form = document.getElementById("stone-form");
 const userInput = document.getElementById("user-input");
-const button = document.getElementById("send-button");
-const loading = document.getElementById("loading");
-const resultArea = document.getElementById("result-area");
+const btn = document.getElementById("send-button");
 const resultText = document.getElementById("result-text");
+const resultArea = document.getElementById("result-area");
 const resultMeta = document.getElementById("result-meta");
 
 form.addEventListener("submit", async (e) => {
@@ -13,12 +12,9 @@ form.addEventListener("submit", async (e) => {
   const input = userInput.value.trim();
   if (!input) return;
 
-  button.disabled = true;
-  loading.classList.remove("hidden");
+  btn.disabled = true;
   resultArea.classList.add("hidden");
-  resultMeta.classList.add("hidden");
-  resultText.textContent = ""; // 一旦空にする
-
+  
   try {
     const response = await fetch(WORKER_URL, {
       method: "POST",
@@ -28,24 +24,17 @@ form.addEventListener("submit", async (e) => {
 
     const data = await response.json();
 
-    resultArea.classList.remove("hidden");
-    resultMeta.classList.remove("hidden");
-
     if (data.ok) {
       resultMeta.textContent = "【鑑定結果】";
-      resultText.textContent = data.text; // ここで中身を流し込む
+      resultText.textContent = data.text;
+      resultArea.classList.remove("hidden");
     } else {
-      resultMeta.textContent = "【サーバーからの警告】";
-      // ★ここが重要：警告の下にエラーの内容を直接書く
-      resultText.textContent = "詳細: " + (data.error || "原因不明のエラー");
+      // 画面を無視して、何が起きているかポップアップで表示！
+      alert("⚠️ サーバーからの警告メッセージ:\n\n" + data.error);
     }
   } catch (error) {
-    resultArea.classList.remove("hidden");
-    resultMeta.classList.remove("hidden");
-    resultMeta.textContent = "【通信エラー】";
-    resultText.textContent = "エラーが発生しました: " + error.message;
+    alert("⚠️ 通信エラーが発生しました:\n\n" + error.message);
   } finally {
-    loading.classList.add("hidden");
-    button.disabled = false;
+    btn.disabled = false;
   }
 });
