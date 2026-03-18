@@ -8,6 +8,8 @@ const resultEmpty = document.getElementById("result-empty");
 const resultMeta = document.getElementById("result-meta");
 const resultArea = document.getElementById("result-area");
 const resultText = document.getElementById("result-text");
+const imageWrap = document.getElementById("image-wrap");
+const stoneImage = document.getElementById("stone-image");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -23,10 +25,12 @@ form.addEventListener("submit", async (e) => {
   resultEmpty.classList.add("hidden");
   resultMeta.classList.add("hidden");
   resultArea.classList.add("hidden");
+  imageWrap.classList.add("hidden");
   resultText.textContent = "";
+  stoneImage.removeAttribute("src");
 
   try {
-    const data = await postWithTimeout(WORKER_URL, { input }, 30000);
+    const data = await postWithTimeout(WORKER_URL, { input }, 45000);
 
     if (!data.ok) {
       showError(data.error || "通信エラーが発生しました。");
@@ -41,6 +45,11 @@ form.addEventListener("submit", async (e) => {
     resultMeta.classList.remove("hidden");
     resultText.textContent = data.text || "結果を受け取れませんでした。";
     resultArea.classList.remove("hidden");
+
+    if (data.image_b64) {
+      stoneImage.src = `data:image/png;base64,${data.image_b64}`;
+      imageWrap.classList.remove("hidden");
+    }
   } catch (error) {
     console.error(error);
     showError("通信が止まってしまいました。少し時間をおいて、もう一度お試しください。");
@@ -50,7 +59,7 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-async function postWithTimeout(url, body, timeoutMs = 30000) {
+async function postWithTimeout(url, body, timeoutMs = 45000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -79,4 +88,5 @@ function showError(message) {
   resultEmpty.classList.add("hidden");
   resultText.textContent = message;
   resultArea.classList.remove("hidden");
+  imageWrap.classList.add("hidden");
 }
