@@ -4,52 +4,49 @@
     <meta charset="UTF-8">
     <title>石のつぶやきAI</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f0f0f0; padding: 20px; }
-        .container { background: white; padding: 30px; border-radius: 15px; max-width: 500px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        button { padding: 10px 20px; background: #4A90E2; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        #result { margin-top: 20px; text-align: left; white-space: pre-wrap; line-height: 1.6; border-top: 1px solid #eee; padding-top: 20px; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h1 { color: #333; font-size: 24px; margin-bottom: 10px; }
+        input { width: 100%; padding: 12px; margin: 20px 0; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #764ba2; }
+        #result { margin-top: 30px; text-align: left; white-space: pre-wrap; color: #555; line-height: 1.6; font-size: 15px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>石のつぶやきAI</h1>
-        <p>石の名前を入力してね</p>
-        <input type="text" id="stoneName" placeholder="例：水晶、ラピスラズリ">
-        <button onclick="checkStone()">調べる</button>
+    <div class="card">
+        <h1>✨ 石のつぶやきAI</h1>
+        <p>気になる石の名前を入力してください</p>
+        <input type="text" id="stoneInput" placeholder="例：ラピスラズリ">
+        <button onclick="askAI()">石の声を聴く</button>
         <div id="result"></div>
     </div>
 
     <script>
-        async function checkStone() {
-            const name = document.getElementById('stoneName').value;
-            const resultDiv = document.getElementById('result');
-            if (!name) return alert("石の名前を入れてね");
+        async function askAI() {
+            const input = document.getElementById('stoneInput').value;
+            const resDiv = document.getElementById('result');
+            if (!input) return alert("石の名前を入れてね");
 
-            resultDiv.innerText = "鑑定中...";
-
-            // ★ ばぶるさんのキーを直接使います。Workerは通しません！
-            const API_KEY = "AIzaSyBQRLbNyKIA0ccgW_Uj0DdZ1vb8aqbqKhY";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+            resDiv.innerText = "石と対話中...";
 
             try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: `あなたは「石のつぶやきAI」です。${name}という石の声を代弁して、最後の一文字まで詳しく詳しく丁寧に回答してください。` }] }]
-                    })
-                });
-
-                const data = await response.json();
+                // ★ばぶるさんのWorkerのURLをここに入れてください
+                const WORKER_URL = "ここにWorkerのURLを貼る";
                 
-                if (data.error) {
-                    resultDiv.innerText = "エラー: " + data.error.message;
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ input: input })
+                });
+                const data = await response.json();
+
+                if (data.ok) {
+                    resDiv.innerText = "【石からのメッセージ】\n\n" + data.text;
                 } else {
-                    resultDiv.innerText = "【鑑定結果】\n\n" + data.candidates[0].content.parts[0].text;
+                    resDiv.innerText = "エラー: " + data.error;
                 }
             } catch (e) {
-                resultDiv.innerText = "通信エラーが発生しました。";
+                resDiv.innerText = "接続に失敗しました。URLを確認してください。";
             }
         }
     </script>
