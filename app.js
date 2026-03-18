@@ -2,7 +2,8 @@ const WORKER_URL = "https://stone-01.its-brg77.workers.dev";
 
 const form = document.getElementById("stone-form");
 const userInput = document.getElementById("user-input");
-const button = document.getElementById("send-button");
+const sendButton = document.getElementById("send-button");
+
 const loading = document.getElementById("loading");
 const resultEmpty = document.getElementById("result-empty");
 const resultMeta = document.getElementById("result-meta");
@@ -40,10 +41,7 @@ form.addEventListener("submit", async (e) => {
   }
 
   resetBeforeRequest();
-
-  button.disabled = true;
-  setQuickButtonsDisabled(true);
-  loading.classList.remove("hidden");
+  setBusy(true);
 
   try {
     const data = await postWithTimeout(WORKER_URL, { input }, 120000);
@@ -71,15 +69,17 @@ form.addEventListener("submit", async (e) => {
       tarotWrap.classList.remove("hidden");
     }
 
+    if (data.image_error) {
+      appendImageErrorNote(data.image_error);
+    }
+
     updateShopGuide(mode, data.shop_url);
     showShopGuide();
   } catch (error) {
     console.error(error);
     showError("通信が止まってしまいました。少し時間をおいて、もう一度お試しください。");
   } finally {
-    button.disabled = false;
-    setQuickButtonsDisabled(false);
-    loading.classList.add("hidden");
+    setBusy(false);
   }
 });
 
@@ -106,17 +106,23 @@ async function postWithTimeout(url, body, timeoutMs = 120000) {
   }
 }
 
-function setQuickButtonsDisabled(disabled) {
+function setBusy(isBusy) {
+  sendButton.disabled = isBusy;
   quickButtons.forEach((btn) => {
-    btn.disabled = disabled;
+    btn.disabled = isBusy;
   });
+
+  if (isBusy) {
+    loading.classList.remove("hidden");
+  } else {
+    loading.classList.add("hidden");
+  }
 }
 
 function resetBeforeRequest() {
   resultEmpty.classList.add("hidden");
   resultMeta.classList.add("hidden");
   resultArea.classList.add("hidden");
-
   imageWrap.classList.add("hidden");
   tarotWrap.classList.add("hidden");
   hideShopGuide();
@@ -146,7 +152,6 @@ function showError(message) {
 
 function showErrorWithMeta(data) {
   const lines = [];
-
   lines.push(data.error || "エラーが発生しました。");
 
   if (typeof data.remaining_text === "number") {
@@ -157,8 +162,12 @@ function showErrorWithMeta(data) {
     lines.push(`残りタロット回数: ${data.remaining_tarot}回`);
   }
 
-  if (typeof data.remaining_image === "number") {
-    lines.push(`残り画像回数: ${data.remaining_image}回`);
+  if (typeof data.remaining_stone_image === "number") {
+    lines.push(`残り石画像回数: ${data.remaining_stone_image}回`);
+  }
+
+  if (typeof data.remaining_tarot_image === "number") {
+    lines.push(`残りタロット画像回数: ${data.remaining_tarot_image}回`);
   }
 
   resultMeta.textContent = "お知らせ";
@@ -178,7 +187,8 @@ function showErrorWithMeta(data) {
 }
 
 function buildMetaText(mode, data) {
-  const modeText = getModeText(mode);
+  const parts = [getModeText(mode)];
+
   const counts = [];
 
   if (typeof data.remaining_text === "number") {
@@ -189,15 +199,19 @@ function buildMetaText(mode, data) {
     counts.push(`残りタロット ${data.remaining_tarot}回`);
   }
 
-  if (typeof data.remaining_image === "number") {
-    counts.push(`残り画像 ${data.remaining_image}回`);
+  if (typeof data.remaining_stone_image === "number") {
+    counts.push(`残り石画像 ${data.remaining_stone_image}回`);
+  }
+
+  if (typeof data.remaining_tarot_image === "number") {
+    counts.push(`残りタロット画像 ${data.remaining_tarot_image}回`);
   }
 
   if (counts.length > 0) {
-    return `${modeText}｜${counts.join(" / ")}`;
+    parts.push(counts.join(" / "));
   }
 
-  return modeText;
+  return parts.join("｜");
 }
 
 function getModeText(mode) {
@@ -219,6 +233,13 @@ function getModeText(mode) {
     default:
       return "結果を整理しました。";
   }
+}
+
+function appendImageErrorNote(message) {
+  if (!message) return;
+
+  const current = resultText.textContent || "";
+  resultText.textContent = `${current}\n\n【画像について】\n${message}`;
 }
 
 function updateShopGuide(mode, shopUrl) {
