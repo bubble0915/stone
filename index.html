@@ -4,19 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>石のつぶやきAI</title>
-  <link rel="stylesheet" href="style.css?v=12" />
+  <link rel="stylesheet" href="style.css?v=20" />
 </head>
 <body>
   <div class="bg-glow"></div>
 
   <main class="app">
     <header class="hero">
-      <div class="hero-badge">天然石辞典 × 気持ち診断 × タロット補助診断</div>
+      <div class="hero-badge">天然石辞典 × 気持ちに合う石提案 × 補助タロット</div>
       <h1>石のつぶやきAI</h1>
       <p class="hero-text">
-        石の名前を入れると、天然石辞典のように意味や効能をお返しします。<br>
-        今の気持ちを入れると、対処法と、その状況に合う石を最大3つご提案します。<br>
-        タロットによる補助診断として「今日の運勢」「今週の運勢」「恋愛運」「全体運」「3枚引き」にも対応しています。
+        石の名前を入れると、辞典のように意味や特徴をお返しします。<br>
+        今の気持ちや願いごとを入れると、やさしい整理と、その状況に合う石をご提案します。<br>
+        タロットは補助診断として使えます。結果に合わせた画像も表示します。
       </p>
     </header>
 
@@ -24,35 +24,35 @@
       <form id="stone-form">
         <div class="field">
           <label for="user-input">石の名前、今の気持ち、または占いメニュー</label>
-
-          <div class="quick-menu">
-            <p class="quick-menu-title">ワンタップメニュー</p>
-            <div class="quick-buttons">
-              <button type="button" class="quick-button" data-value="今日の運勢">今日の運勢</button>
-              <button type="button" class="quick-button" data-value="今週の運勢">今週の運勢</button>
-              <button type="button" class="quick-button" data-value="恋愛運">恋愛運</button>
-              <button type="button" class="quick-button" data-value="全体運">全体運</button>
-              <button type="button" class="quick-button" data-value="3枚引き">3枚引き</button>
-            </div>
-          </div>
-
           <textarea
             id="user-input"
-            placeholder="例1：アメジスト&#10;例2：最近疲れていて、心を落ち着かせたいです&#10;例3：今日の運勢&#10;例4：3枚引き"
+            placeholder="例1：アメジスト&#10;例2：最近疲れていて、心を落ち着かせたいです&#10;例3：家内安全&#10;例4：今日の運勢"
             required
           ></textarea>
         </div>
 
-        <div class="action-row">
-          <button type="submit" id="send-button">調べる</button>
-        </div>
+        <button type="submit" id="send-button">調べる</button>
       </form>
+
+      <div class="quick-menu-wrap">
+        <h3>ワンタップメニュー</h3>
+        <div class="quick-menu">
+          <button type="button" class="quick-btn" data-fill="今日の運勢">今日の運勢</button>
+          <button type="button" class="quick-btn" data-fill="今週の運勢">今週の運勢</button>
+          <button type="button" class="quick-btn" data-fill="恋愛運">恋愛運</button>
+          <button type="button" class="quick-btn" data-fill="全体運">全体運</button>
+          <button type="button" class="quick-btn" data-fill="3枚引き">3枚引き</button>
+          <button type="button" class="quick-btn" data-fill="最近疲れていて、心を落ち着かせたいです">疲れている</button>
+          <button type="button" class="quick-btn" data-fill="家内安全">家内安全</button>
+          <button type="button" class="quick-btn" data-fill="金運アップ">金運アップ</button>
+        </div>
+      </div>
     </section>
 
     <section class="card result-card">
       <div class="result-header">
         <h2>結果</h2>
-        <p>返ってきた内容を最後までそのまま表示します</p>
+        <p>返ってきた内容を全部そのまま表示します</p>
       </div>
 
       <div id="loading" class="loading hidden">静かに読み取っています…</div>
@@ -63,32 +63,47 @@
         <img id="stone-image" alt="石のイメージ画像" />
       </div>
 
-      <div id="tarot-wrap" class="image-wrap hidden">
-        <img id="tarot-image" alt="タロットカードのイメージ画像" />
+      <div id="tarot-image-wrap" class="image-wrap hidden">
+        <img id="tarot-image" alt="タロット画像" />
+      </div>
+
+      <div id="recommended-wrap" class="recommended-wrap hidden">
+        <h3>おすすめの石</h3>
+        <div id="recommended-list" class="recommended-list"></div>
+      </div>
+
+      <div id="shop-wrap" class="shop-wrap hidden">
+        <div class="shop-title">気になる石があればこちら</div>
+        <a id="shop-link" class="shop-link" href="#" target="_blank" rel="noopener noreferrer"></a>
       </div>
 
       <div id="result-area" class="result-area hidden">
         <pre id="result-text"></pre>
       </div>
-
-      <div id="shop-guide" class="shop-guide hidden">
-        <h3>今回の結果に近い石を見てみる</h3>
-        <p>
-          診断や図鑑で気になった石を、実際に手に取ってみたいと感じた方へ。<br>
-          「石のつぶやき」公式ショップで関連する天然石をご覧いただけます。
-        </p>
-        <a
-          href="https://brgholdgs.base.shop"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="shop-button"
-        >
-          石のつぶやき 公式ショップを見る
-        </a>
-      </div>
     </section>
   </main>
 
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=20"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const input = document.getElementById("user-input");
+      const form = document.getElementById("stone-form");
+      const quickButtons = document.querySelectorAll(".quick-btn");
+
+      quickButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const fill = btn.getAttribute("data-fill") || "";
+          input.value = fill;
+          input.focus();
+
+          if (form && typeof form.requestSubmit === "function") {
+            form.requestSubmit();
+          } else if (form) {
+            form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>
