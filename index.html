@@ -57,7 +57,7 @@
       <h2>浄化通知</h2>
       <p>満月や定期的な浄化タイミングをお知らせします</p>
 
-      <button onclick="enablePush()">
+      <button id="enablePushBtn" type="button">
         通知ON（浄化タイミング）
       </button>
     </section>
@@ -108,12 +108,34 @@
 
   <!-- スクリプト -->
   <script src="app.js"></script>
-  <script src="notify.js"></script>
+
+  <script type="module">
+    import { enablePushNotifications } from "./notify.js";
+
+    const btn = document.getElementById("enablePushBtn");
+
+    if (btn) {
+      btn.addEventListener("click", async () => {
+        try {
+          await enablePushNotifications();
+        } catch (e) {
+          console.error(e);
+          alert("エラー: " + e.message);
+        }
+      });
+    }
+  </script>
 
   <!-- Service Worker登録 -->
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js");
+      navigator.serviceWorker.register("./sw.js")
+        .then((registration) => {
+          console.log("Service Worker登録成功:", registration);
+        })
+        .catch((error) => {
+          console.error("Service Worker登録失敗:", error);
+        });
     }
   </script>
 
