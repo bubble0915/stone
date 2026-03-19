@@ -23,7 +23,6 @@ html,
 body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
 }
 
 body {
@@ -35,12 +34,6 @@ body {
 
 a {
   color: inherit;
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
 }
 
 .bg-glow {
@@ -80,7 +73,6 @@ img {
   margin: 0 0 10px;
   font-size: 2.1rem;
   letter-spacing: 0.05em;
-  word-break: break-word;
 }
 
 .hero-text {
@@ -97,7 +89,6 @@ img {
   box-shadow: 0 16px 36px var(--shadow);
   backdrop-filter: blur(8px);
   margin-bottom: 18px;
-  overflow: hidden;
 }
 
 .field {
@@ -138,21 +129,20 @@ textarea:focus {
 
 button {
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.72);
+  border: none;
   border-radius: 15px;
   padding: 15px 18px;
   font-size: 1rem;
   font-weight: 700;
   color: #fff;
   cursor: pointer;
-  background: rgba(240, 109, 151, 0.08);
-  box-shadow: 0 8px 18px rgba(240, 109, 151, 0.12);
-  transition: transform 0.15s ease, opacity 0.15s ease, filter 0.15s ease, background 0.15s ease;
+  background: linear-gradient(180deg, var(--accent2) 0%, var(--accent) 100%);
+  box-shadow: 0 12px 26px rgba(217, 74, 122, 0.3);
+  transition: transform 0.15s ease, opacity 0.15s ease, filter 0.15s ease;
   touch-action: manipulation;
 }
 
 button:hover {
-  background: rgba(240, 109, 151, 0.14);
   filter: brightness(1.03);
 }
 
@@ -163,11 +153,6 @@ button:active {
 button:disabled {
   opacity: 0.7;
   cursor: wait;
-}
-
-.tarot-buttons {
-  display: grid;
-  gap: 10px;
 }
 
 .result-header h2 {
@@ -195,8 +180,6 @@ button:disabled {
   color: var(--subtext);
   line-height: 1.8;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  max-width: 100%;
-  overflow: hidden;
 }
 
 .loading {
@@ -210,8 +193,6 @@ button:disabled {
 .result-meta {
   color: var(--soft);
   font-size: 0.95rem;
-  word-break: break-word;
-  overflow-wrap: anywhere;
 }
 
 .result-meta strong {
@@ -226,31 +207,32 @@ button:disabled {
 
 #stone-image,
 #tarot-image {
-  width: 100%;
   max-width: 100%;
   height: auto;
   display: block;
   margin: 0 auto;
   border-radius: 16px;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
-  object-fit: contain;
 }
 
 .result-area {
-  overflow: hidden;
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
 }
 
 #result-text {
   margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  display: block;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+  display: block !important;
   line-height: 1.95;
   color: #fff8fb;
   font-family: inherit;
   font-size: 1rem;
-  max-width: 100%;
 }
 
 .recommended-wrap h3,
@@ -270,8 +252,6 @@ button:disabled {
   border-radius: 14px;
   background: var(--chip);
   border: 1px solid var(--chip-border);
-  max-width: 100%;
-  overflow: hidden;
 }
 
 .recommended-name {
@@ -279,16 +259,12 @@ button:disabled {
   color: #fff;
   line-height: 1.6;
   margin-bottom: 4px;
-  word-break: break-word;
-  overflow-wrap: anywhere;
 }
 
 .recommended-tags {
   font-size: 0.95rem;
   color: var(--subtext);
   line-height: 1.7;
-  word-break: break-word;
-  overflow-wrap: anywhere;
 }
 
 .quick-menu {
