@@ -2,34 +2,23 @@ const WORKER_URL = "https://stone-01.its-brg77.workers.dev";
 
 const form = document.getElementById("stone-form");
 const userInput = document.getElementById("user-input");
-const sendButton = document.getElementById("send-button");
-
+const button = document.getElementById("send-button");
 const loading = document.getElementById("loading");
 const resultEmpty = document.getElementById("result-empty");
 const resultMeta = document.getElementById("result-meta");
 const resultArea = document.getElementById("result-area");
 const resultText = document.getElementById("result-text");
-
 const imageWrap = document.getElementById("image-wrap");
 const stoneImage = document.getElementById("stone-image");
 
-const tarotWrap = document.getElementById("tarot-wrap");
-const tarotImage = document.getElementById("tarot-image");
+let tarotImageWrap = document.getElementById("tarot-image-wrap");
+let tarotImage = document.getElementById("tarot-image");
+let recommendedWrap = document.getElementById("recommended-wrap");
+let recommendedList = document.getElementById("recommended-list");
+let shopWrap = document.getElementById("shop-wrap");
+let shopLink = document.getElementById("shop-link");
 
-const shopGuide = document.getElementById("shop-guide");
-const shopGuideTitle = shopGuide ? shopGuide.querySelector("h3") : null;
-const shopGuideText = shopGuide ? shopGuide.querySelector("p") : null;
-const shopGuideLink = shopGuide ? shopGuide.querySelector("a") : null;
-
-const quickButtons = document.querySelectorAll(".quick-button");
-
-quickButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const value = btn.dataset.value || "";
-    userInput.value = value;
-    userInput.focus();
-  });
-});
+ensureExtraElements();
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -40,50 +29,31 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
-  resetBeforeRequest();
-  setBusy(true);
+  setLoadingState(true);
+  resetView();
 
   try {
-    const data = await postWithTimeout(WORKER_URL, { input }, 120000);
+    const data = await postWithTimeout(WORKER_URL, { input }, 90000);
 
-    if (!data.ok) {
-      showErrorWithMeta(data);
+    if (!data || !data.ok) {
+      showError(data?.error || "通信エラーが発生しました。");
       return;
     }
 
-    const mode = data.mode || "unknown";
-
-    resultMeta.textContent = buildMetaText(mode, data);
-    resultMeta.classList.remove("hidden");
-
-    resultText.textContent = data.text || "結果を受け取れませんでした。";
-    resultArea.classList.remove("hidden");
-
-    if (data.image_b64) {
-      stoneImage.src = `data:image/png;base64,${data.image_b64}`;
-      imageWrap.classList.remove("hidden");
-    }
-
-    if (data.tarot_image_b64) {
-      tarotImage.src = `data:image/png;base64,${data.tarot_image_b64}`;
-      tarotWrap.classList.remove("hidden");
-    }
-
-    if (data.image_error) {
-      appendImageErrorNote(data.image_error);
-    }
-
-    updateShopGuide(mode, data.shop_url);
-    showShopGuide();
+    renderMeta(data);
+    renderText(data.text || "結果を受け取れませんでした。");
+    renderRecommendedStones(data.recommended_stones || []);
+    renderImages(data);
+    renderShop(data.shop_url);
   } catch (error) {
     console.error(error);
     showError("通信が止まってしまいました。少し時間をおいて、もう一度お試しください。");
   } finally {
-    setBusy(false);
+    setLoadingState(false);
   }
 });
 
-async function postWithTimeout(url, body, timeoutMs = 120000) {
+async function postWithTimeout(url, body, timeoutMs = 90000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -106,192 +76,213 @@ async function postWithTimeout(url, body, timeoutMs = 120000) {
   }
 }
 
-function setBusy(isBusy) {
-  sendButton.disabled = isBusy;
-  quickButtons.forEach((btn) => {
-    btn.disabled = isBusy;
-  });
-
-  if (isBusy) {
+function setLoadingState(isLoading) {
+  button.disabled = isLoading;
+  if (isLoading) {
     loading.classList.remove("hidden");
   } else {
     loading.classList.add("hidden");
   }
 }
 
-function resetBeforeRequest() {
+function resetView() {
   resultEmpty.classList.add("hidden");
   resultMeta.classList.add("hidden");
   resultArea.classList.add("hidden");
   imageWrap.classList.add("hidden");
-  tarotWrap.classList.add("hidden");
-  hideShopGuide();
+  tarotImageWrap.classList.add("hidden");
+  recommendedWrap.classList.add("hidden");
+  shopWrap.classList.add("hidden");
 
+  resultMeta.innerHTML = "";
   resultText.textContent = "";
+  recommendedList.innerHTML = "";
 
   stoneImage.removeAttribute("src");
   tarotImage.removeAttribute("src");
+  shopLink.removeAttribute("href");
+  shopLink.textContent = "";
+}
+
+function renderMeta(data) {
+  const modeLabel = getModeLabel(data.mode);
+
+  const parts = [
+    `<strong>${escapeHtml(modeLabel)}</strong>`
+  ];
+
+  if (typeof data.remaining_text === "number") {
+    parts.push(`無料診断残り: ${data.remaining_text}回`);
+  }
+
+  if (typeof data.remaining_tarot === "number") {
+    parts.push(`無料タロット残り: ${data.remaining_tarot}回`);
+  }
+
+  if (typeof data.remaining_stone_image === "number") {
+    parts.push(`石画像残り: ${data.remaining_stone_image}回`);
+  }
+
+  if (typeof data.remaining_tarot_image === "number") {
+    parts.push(`タロット画像残り: ${data.remaining_tarot_image}回`);
+  }
+
+  if (data.image_error) {
+    parts.push(`画像: ${escapeHtml(data.image_error)}`);
+  }
+
+  resultMeta.innerHTML = parts.join("<br>");
+  resultMeta.classList.remove("hidden");
+}
+
+function renderText(text) {
+  resultText.textContent = text;
+  resultArea.classList.remove("hidden");
+}
+
+function renderRecommendedStones(stones) {
+  if (!Array.isArray(stones) || stones.length === 0) {
+    return;
+  }
+
+  recommendedList.innerHTML = "";
+
+  stones.forEach((stone, index) => {
+    const item = document.createElement("div");
+    item.className = "recommended-item";
+
+    const title = document.createElement("div");
+    title.className = "recommended-name";
+    title.textContent = `${index + 1}. ${stone.name || "石"}`;
+
+    const meta = document.createElement("div");
+    meta.className = "recommended-tags";
+
+    const tags = Array.isArray(stone.tags) ? stone.tags.join("・") : "";
+    const colors = Array.isArray(stone.color) ? stone.color.join("・") : "";
+
+    meta.textContent = [colors, tags].filter(Boolean).join(" / ");
+
+    item.appendChild(title);
+    item.appendChild(meta);
+    recommendedList.appendChild(item);
+  });
+
+  recommendedWrap.classList.remove("hidden");
+}
+
+function renderImages(data) {
+  if (data.image_b64) {
+    stoneImage.src = `data:image/png;base64,${data.image_b64}`;
+    imageWrap.classList.remove("hidden");
+  }
+
+  if (data.tarot_image_b64) {
+    tarotImage.src = `data:image/png;base64,${data.tarot_image_b64}`;
+    tarotImageWrap.classList.remove("hidden");
+  }
+}
+
+function renderShop(url) {
+  if (!url) return;
+
+  shopLink.href = url;
+  shopLink.textContent = "石のつぶやきショップを見る";
+  shopLink.target = "_blank";
+  shopLink.rel = "noopener noreferrer";
+  shopWrap.classList.remove("hidden");
 }
 
 function showError(message) {
-  resultMeta.textContent = "お知らせ";
+  resultMeta.innerHTML = "<strong>お知らせ</strong>";
   resultMeta.classList.remove("hidden");
   resultEmpty.classList.add("hidden");
-
   resultText.textContent = message;
   resultArea.classList.remove("hidden");
-
   imageWrap.classList.add("hidden");
-  tarotWrap.classList.add("hidden");
-
-  stoneImage.removeAttribute("src");
-  tarotImage.removeAttribute("src");
-
-  hideShopGuide();
+  tarotImageWrap.classList.add("hidden");
+  recommendedWrap.classList.add("hidden");
+  shopWrap.classList.add("hidden");
 }
 
-function showErrorWithMeta(data) {
-  const lines = [];
-  lines.push(data.error || "エラーが発生しました。");
-
-  if (typeof data.remaining_text === "number") {
-    lines.push(`残り診断回数: ${data.remaining_text}回`);
-  }
-
-  if (typeof data.remaining_tarot === "number") {
-    lines.push(`残りタロット回数: ${data.remaining_tarot}回`);
-  }
-
-  if (typeof data.remaining_stone_image === "number") {
-    lines.push(`残り石画像回数: ${data.remaining_stone_image}回`);
-  }
-
-  if (typeof data.remaining_tarot_image === "number") {
-    lines.push(`残りタロット画像回数: ${data.remaining_tarot_image}回`);
-  }
-
-  resultMeta.textContent = "お知らせ";
-  resultMeta.classList.remove("hidden");
-  resultEmpty.classList.add("hidden");
-
-  resultText.textContent = lines.join("\n");
-  resultArea.classList.remove("hidden");
-
-  imageWrap.classList.add("hidden");
-  tarotWrap.classList.add("hidden");
-
-  stoneImage.removeAttribute("src");
-  tarotImage.removeAttribute("src");
-
-  hideShopGuide();
-}
-
-function buildMetaText(mode, data) {
-  const parts = [getModeText(mode)];
-
-  const counts = [];
-
-  if (typeof data.remaining_text === "number") {
-    counts.push(`残り診断 ${data.remaining_text}回`);
-  }
-
-  if (typeof data.remaining_tarot === "number") {
-    counts.push(`残りタロット ${data.remaining_tarot}回`);
-  }
-
-  if (typeof data.remaining_stone_image === "number") {
-    counts.push(`残り石画像 ${data.remaining_stone_image}回`);
-  }
-
-  if (typeof data.remaining_tarot_image === "number") {
-    counts.push(`残りタロット画像 ${data.remaining_tarot_image}回`);
-  }
-
-  if (counts.length > 0) {
-    parts.push(counts.join(" / "));
-  }
-
-  return parts.join("｜");
-}
-
-function getModeText(mode) {
+function getModeLabel(mode) {
   switch (mode) {
     case "stone":
-      return "石の名前として受け取り、辞典のように整理しました。";
+      return "石辞典モード";
     case "feeling":
-      return "今の気持ちとして受け取り、対処法と合う石を整理しました。";
+      return "気持ち診断モード";
     case "tarot_daily":
-      return "今日の運勢をタロットでやさしく読み取りました。";
+      return "タロット：今日の運勢";
     case "tarot_weekly":
-      return "今週の運勢をタロットでやさしく読み取りました。";
+      return "タロット：今週の運勢";
     case "tarot_love":
-      return "恋愛運をタロットでやさしく読み取りました。";
+      return "タロット：恋愛運";
     case "tarot_general":
-      return "全体運をタロットでやさしく読み取りました。";
+      return "タロット：全体運";
     case "tarot_three":
-      return "3枚引きで流れをやさしく読み取りました。";
+      return "タロット：3枚引き";
     default:
-      return "結果を整理しました。";
+      return "結果";
   }
 }
 
-function appendImageErrorNote(message) {
-  if (!message) return;
+function ensureExtraElements() {
+  const resultCard = document.querySelector(".result-card");
 
-  const current = resultText.textContent || "";
-  resultText.textContent = `${current}\n\n【画像について】\n${message}`;
-}
+  if (!tarotImageWrap) {
+    tarotImageWrap = document.createElement("div");
+    tarotImageWrap.id = "tarot-image-wrap";
+    tarotImageWrap.className = "image-wrap hidden";
 
-function updateShopGuide(mode, shopUrl) {
-  if (!shopGuide || !shopGuideTitle || !shopGuideText || !shopGuideLink) return;
+    tarotImage = document.createElement("img");
+    tarotImage.id = "tarot-image";
+    tarotImage.alt = "タロット画像";
 
-  const url = shopUrl || "https://brgholdgs.base.shop";
-  shopGuideLink.href = url;
-
-  if (mode === "stone") {
-    shopGuideTitle.textContent = "この石に近いアイテムを見てみる";
-    shopGuideText.innerHTML = `
-      図鑑で気になった石を、実際に手に取ってみたい方へ。<br>
-      「石のつぶやき」公式ショップで関連する天然石をご覧いただけます。
-    `;
-    shopGuideLink.textContent = "石のつぶやき 公式ショップを見る";
-    return;
+    tarotImageWrap.appendChild(tarotImage);
+    resultCard.appendChild(tarotImageWrap);
   }
 
-  if (mode === "feeling") {
-    shopGuideTitle.textContent = "今回のあなたに合う石を見てみる";
-    shopGuideText.innerHTML = `
-      診断で気になった石を、実際に手に取ってみたい方へ。<br>
-      「石のつぶやき」公式ショップで関連する天然石をご覧いただけます。
-    `;
-    shopGuideLink.textContent = "今回の石を見てみる";
-    return;
+  if (!recommendedWrap) {
+    recommendedWrap = document.createElement("div");
+    recommendedWrap.id = "recommended-wrap";
+    recommendedWrap.className = "recommended-wrap hidden";
+
+    const title = document.createElement("h3");
+    title.textContent = "おすすめの石";
+
+    recommendedList = document.createElement("div");
+    recommendedList.id = "recommended-list";
+    recommendedList.className = "recommended-list";
+
+    recommendedWrap.appendChild(title);
+    recommendedWrap.appendChild(recommendedList);
+    resultCard.appendChild(recommendedWrap);
   }
 
-  if (mode.startsWith("tarot_")) {
-    shopGuideTitle.textContent = "今の流れを支える石を見てみる";
-    shopGuideText.innerHTML = `
-      今回のタロット結果に寄り添う石を、実際に手に取ってみたい方へ。<br>
-      「石のつぶやき」公式ショップで関連する天然石をご覧いただけます。
-    `;
-    shopGuideLink.textContent = "今の流れに合う石を見てみる";
-    return;
+  if (!shopWrap) {
+    shopWrap = document.createElement("div");
+    shopWrap.id = "shop-wrap";
+    shopWrap.className = "shop-wrap hidden";
+
+    const title = document.createElement("div");
+    title.className = "shop-title";
+    title.textContent = "気になる石があればこちら";
+
+    shopLink = document.createElement("a");
+    shopLink.id = "shop-link";
+    shopLink.className = "shop-link";
+
+    shopWrap.appendChild(title);
+    shopWrap.appendChild(shopLink);
+    resultCard.appendChild(shopWrap);
   }
-
-  shopGuideTitle.textContent = "石のつぶやき 公式ショップ";
-  shopGuideText.innerHTML = `
-    気になった石を、実際に手に取ってみたい方へ。<br>
-    「石のつぶやき」公式ショップをご覧いただけます。
-  `;
-  shopGuideLink.textContent = "公式ショップを見る";
 }
 
-function showShopGuide() {
-  if (!shopGuide) return;
-  shopGuide.classList.remove("hidden");
-}
-
-function hideShopGuide() {
-  if (!shopGuide) return;
-  shopGuide.classList.add("hidden");
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
