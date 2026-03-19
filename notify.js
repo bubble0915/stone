@@ -1,7 +1,7 @@
 const PUSH_WORKER_URL = "https://stone-push-test.its-brg77.workers.dev";
 
 // ここはあとで公開VAPIDキーに置き換える
-const PUBLIC_VAPID_KEY = "REPLACE_PUBLIC_VAPID_KEY";
+const PUBLIC_VAPID_KEY = "BFfcC7aBaP0zxK6HtOUdiq6wW0jgAtsWJFleGclsliDEi3nwwFmD8n9pLzpcuFfguTpUvFzFNu41LIGKh7gnpNc";
 
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
