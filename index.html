@@ -4,21 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>石のつぶやきAI</title>
-
-  <link rel="stylesheet" href="style.css?v=30" />
+  <link rel="stylesheet" href="style.css?v=40" />
 </head>
-
 <body>
   <div class="bg-glow"></div>
 
   <main class="app">
-
-    <!-- ===== ヘッダー ===== -->
     <header class="hero">
       <div class="hero-badge">天然石辞典 × 石提案 × タロット補助診断</div>
-
       <h1>石のつぶやきAI</h1>
-
       <p class="hero-text">
         石の名前を入れると辞典のように説明します。<br>
         気持ちを入れると、対処法と合う石を提案します。<br>
@@ -26,15 +20,10 @@
       </p>
     </header>
 
-
-    <!-- ===== 入力 ===== -->
     <section class="card input-card">
-
       <form id="stone-form">
-
         <div class="field">
           <label for="user-input">石の名前・気持ち・占い</label>
-
           <textarea
             id="user-input"
             placeholder="例：アメジスト&#10;最近疲れている&#10;今日の運勢"
@@ -42,17 +31,11 @@
           ></textarea>
         </div>
 
-        <button type="submit" id="send-button">
-          調べる
-        </button>
-
+        <button type="submit" id="send-button">調べる</button>
       </form>
 
-
-      <!-- ===== ワンタップ占い ===== -->
       <div class="quick-menu-wrap">
         <h3>ワンタップ占い</h3>
-
         <div class="quick-menu">
           <button type="button" class="quick-btn" data-fill="今日の運勢">今日の運勢</button>
           <button type="button" class="quick-btn" data-fill="今週の運勢">今週の運勢</button>
@@ -61,131 +44,103 @@
           <button type="button" class="quick-btn" data-fill="3枚引き">3枚引き</button>
         </div>
       </div>
-
-
-      <!-- ===== 通知ボタン ===== -->
-      <div class="notify-wrap">
-        <button id="enable-notify" type="button">
-          🔔 浄化通知を受け取る
-        </button>
-      </div>
-
     </section>
 
+    <section class="card">
+      <div class="result-header">
+        <h2>浄化通知設定</h2>
+        <p>満月通知と定期浄化通知を受け取れます</p>
+      </div>
 
-    <!-- ===== 結果 ===== -->
+      <div class="field">
+        <label>
+          <input type="checkbox" id="notify-fullmoon" checked />
+          満月の日に月光浄化を通知する
+        </label>
+      </div>
+
+      <div class="field">
+        <label for="notify-interval">定期浄化の間隔</label>
+        <select id="notify-interval">
+          <option value="7">7日ごと</option>
+          <option value="14">14日ごと</option>
+          <option value="30">30日ごと</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="notify-method">おすすめする浄化方法</label>
+        <select id="notify-method">
+          <option value="cluster">水晶クラスター</option>
+          <option value="moonlight">月光</option>
+          <option value="running_water">流水</option>
+          <option value="sage">セージ</option>
+        </select>
+      </div>
+
+      <div class="quick-menu">
+        <button type="button" id="enable-notify">🔔 通知を有効にする</button>
+        <button type="button" id="disable-notify">🔕 通知を解除する</button>
+        <button type="button" id="send-test-notify">🧪 テスト通知を送る</button>
+      </div>
+
+      <div id="notify-status" class="result-meta" style="margin-top:12px;">未設定</div>
+    </section>
+
     <section class="card result-card">
-
       <div class="result-header">
         <h2>結果</h2>
         <p>全文表示されます</p>
       </div>
 
-      <div id="loading" class="loading hidden">
-        静かに読み取っています…
-      </div>
-
-      <div id="result-empty" class="empty-state">
-        ここに結果が表示されます
-      </div>
-
+      <div id="loading" class="loading hidden">静かに読み取っています…</div>
+      <div id="result-empty" class="empty-state">ここに結果が表示されます</div>
       <div id="result-meta" class="result-meta hidden"></div>
 
-
-      <!-- 石画像 -->
       <div id="image-wrap" class="image-wrap hidden">
-        <img id="stone-image" />
+        <img id="stone-image" alt="石のイメージ画像" />
       </div>
 
-      <!-- タロット画像 -->
       <div id="tarot-image-wrap" class="image-wrap hidden">
-        <img id="tarot-image" />
+        <img id="tarot-image" alt="タロット画像" />
       </div>
 
-
-      <!-- おすすめ石 -->
       <div id="recommended-wrap" class="recommended-wrap hidden">
         <h3>おすすめの石</h3>
-        <div id="recommended-list"></div>
+        <div id="recommended-list" class="recommended-list"></div>
       </div>
 
-
-      <!-- ショップ -->
       <div id="shop-wrap" class="shop-wrap hidden">
         <div class="shop-title">気になる石はこちら</div>
-        <a id="shop-link" target="_blank"></a>
+        <a id="shop-link" class="shop-link" target="_blank" rel="noopener noreferrer"></a>
       </div>
 
-
-      <!-- テキスト -->
       <div id="result-area" class="result-area hidden">
         <pre id="result-text"></pre>
       </div>
-
     </section>
-
   </main>
 
-
-  <!-- ===== app.js ===== -->
-  <script src="app.js?v=30"></script>
-
-
-  <!-- ===== Service Worker登録 ===== -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js")
-        .then(() => console.log("SW登録成功"))
-        .catch(err => console.error("SW登録失敗", err));
-    }
-  </script>
-
-
-  <!-- ===== ワンタップ動作 ===== -->
+  <script src="app.js?v=40"></script>
+  <script src="notify.js?v=40"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-
       const input = document.getElementById("user-input");
       const form = document.getElementById("stone-form");
 
-      document.querySelectorAll(".quick-btn").forEach(btn => {
+      document.querySelectorAll(".quick-btn[data-fill]").forEach((btn) => {
         btn.addEventListener("click", () => {
-
-          input.value = btn.dataset.fill;
+          input.value = btn.dataset.fill || "";
           input.focus();
 
           if (form.requestSubmit) {
             form.requestSubmit();
           } else {
-            form.dispatchEvent(new Event("submit"));
+            form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
           }
-
         });
       });
-
     });
   </script>
-
-
-  <!-- ===== 通知ボタン（仮） ===== -->
-  <script>
-    document.getElementById("enable-notify").addEventListener("click", async () => {
-
-      if (!("Notification" in window)) {
-        alert("このブラウザは通知に対応していません");
-        return;
-      }
-
-      const permission = await Notification.requestPermission();
-
-      if (permission === "granted") {
-        alert("通知が有効になりました（次ステップで実際に送信します）");
-      } else {
-        alert("通知は許可されませんでした");
-      }
-
-    });
-  </script>
-
 </body>
 </html>
