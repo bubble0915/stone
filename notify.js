@@ -1,159 +1,19 @@
-const PUSH_WORKER_URL = "https://YOUR-PUSH-WORKER.workers.dev";
+const PUSH_WORKER_URL = "https://stone-push-worker.its-brg77.workers.dev";
 
-document.addEventListener("DOMContentLoaded", () => {
-  const enableBtn = document.getElementById("enable-notify");
-  const disableBtn = document.getElementById("disable-notify");
-  const testBtn = document.getElementById("send-test-notify");
-  const statusEl = document.getElementById("notify-status");
+/**
+ * Cloudflare Workerに設定した公開VAPIDキーを入れてください
+ * 例:
+ * const PUBLIC_VAPID_KEY = "BEXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+ */
+const PUBLIC_VAPID_KEY = "ここに公開VAPIDキーを入れる";
 
-  const fullMoonCheckbox = document.getElementById("notify-fullmoon");
-  const intervalSelect = document.getElementById("notify-interval");
-  const methodSelect = document.getElementById("notify-method");
-
-  if (!enableBtn || !disableBtn || !testBtn || !statusEl) {
-    return;
-  }
-
-  enableBtn.addEventListener("click", async () => {
-    try {
-      setStatus("通知を設定しています…");
-
-      if (!("serviceWorker" in navigator)) {
-        throw new Error("このブラウザは Service Worker に対応していません。");
-      }
-
-      if (!("PushManager" in window)) {
-        throw new Error("このブラウザは Push 通知に対応していません。");
-      }
-
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        throw new Error("通知が許可されませんでした。");
-      }
-
-      const registration = await navigator.serviceWorker.register("/sw.js");
-      const readyRegistration = await navigator.serviceWorker.ready;
-
-      const vapidPublicKey = await fetchVapidPublicKey();
-      const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
-
-      let subscription = await readyRegistration.pushManager.getSubscription();
-      if (!subscription) {
-        subscription = await readyRegistration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey
-        });
-      }
-
-      const settings = getSettings({
-        fullMoonCheckbox,
-        intervalSelect,
-        methodSelect
-      });
-
-      await fetch(`${PUSH_WORKER_URL}/subscribe`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          subscription,
-          settings
-        })
-      }).then(assertJsonOk);
-
-      setStatus("通知を有効にしました。");
-    } catch (error) {
-      console.error(error);
-      setStatus(error.message || "通知設定に失敗しました。");
-    }
-  });
-
-  disableBtn.addEventListener("click", async () => {
-    try {
-      setStatus("通知を解除しています…");
-
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
-
-      if (subscription) {
-        await fetch(`${PUSH_WORKER_URL}/unsubscribe`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            endpoint: subscription.endpoint
-          })
-        }).then(assertJsonOk);
-
-        await subscription.unsubscribe();
-      }
-
-      setStatus("通知を解除しました。");
-    } catch (error) {
-      console.error(error);
-      setStatus(error.message || "通知解除に失敗しました。");
-    }
-  });
-
-  testBtn.addEventListener("click", async () => {
-    try {
-      setStatus("テスト通知を送信しています…");
-
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
-
-      if (!subscription) {
-        throw new Error("先に通知を有効にしてください。");
-      }
-
-      await fetch(`${PUSH_WORKER_URL}/send-test`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          endpoint: subscription.endpoint
-        })
-      }).then(assertJsonOk);
-
-      setStatus("テスト通知を送信しました。数秒待って確認してください。");
-    } catch (error) {
-      console.error(error);
-      setStatus(error.message || "テスト通知の送信に失敗しました。");
-    }
-  });
-
-  function setStatus(text) {
-    statusEl.textContent = text;
-  }
-});
-
-async function fetchVapidPublicKey() {
-  const res = await fetch(`${PUSH_WORKER_URL}/vapid-public-key`);
-  const data = await res.json();
-  if (!data.ok || !data.publicKey) {
-    throw new Error(data.error || "公開鍵の取得に失敗しました。");
-  }
-  return data.publicKey;
-}
-
-function getSettings({ fullMoonCheckbox, intervalSelect, methodSelect }) {
-  return {
-    fullMoonEnabled: !!fullMoonCheckbox?.checked,
-    cleanseIntervalDays: Number(intervalSelect?.value || 7),
-    favoriteCleanseMethod: String(methodSelect?.value || "cluster")
-  };
-}
-
+/**
+ * Base64URL → Uint8Array
+ */
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding)
-    .replace(/-/g, "+")
-    .replace(/_/g, "/");
-
-  const rawData = atob(base64);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
 
   for (let i = 0; i < rawData.length; ++i) {
@@ -163,10 +23,142 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-async function assertJsonOk(response) {
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || !data.ok) {
-    throw new Error(data.error || `HTTP ${response.status}`);
+/**
+ * Service Worker登録
+ */
+export async function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) {
+    alert("このブラウザはService Workerに対応していません。");
+    return null;
   }
-  return data;
+
+  try {
+    const registration = await navigator.serviceWorker.register("./sw.js");
+    console.log("Service Worker 登録成功:", registration);
+    return registration;
+  } catch (error) {
+    console.error("Service Worker 登録失敗:", error);
+    alert("Service Workerの登録に失敗しました。");
+    return null;
+  }
+}
+
+/**
+ * 通知許可を取得
+ */
+export async function requestNotificationPermission() {
+  if (!("Notification" in window)) {
+    alert("このブラウザは通知に対応していません。");
+    return false;
+  }
+
+  const permission = await Notification.requestPermission();
+
+  if (permission !== "granted") {
+    alert("通知が許可されませんでした。ブラウザ設定から許可してください。");
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Push購読を取得または新規作成
+ */
+export async function subscribeUserToPush() {
+  const registration = await navigator.serviceWorker.ready;
+
+  let subscription = await registration.pushManager.getSubscription();
+
+  if (subscription) {
+    console.log("既存の購読あり:", subscription);
+    return subscription;
+  }
+
+  try {
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY),
+    });
+
+    console.log("新規購読成功:", subscription);
+    return subscription;
+  } catch (error) {
+    console.error("Push購読失敗:", error);
+    alert("Push通知の購読に失敗しました。");
+    return null;
+  }
+}
+
+/**
+ * Workerへ購読情報を送信して保存
+ */
+export async function saveSubscriptionToServer(subscription) {
+  try {
+    const response = await fetch(`${PUSH_WORKER_URL}/subscribe`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(subscription),
+    });
+
+    const data = await response.json();
+    console.log("購読保存レスポンス:", data);
+
+    if (!response.ok) {
+      throw new Error(data.error || "購読保存に失敗しました");
+    }
+
+    return true;
+  } catch (error) {
+    console.error("購読保存失敗:", error);
+    alert("購読情報の保存に失敗しました。");
+    return false;
+  }
+}
+
+/**
+ * 通知登録を全部まとめて実行
+ */
+export async function enablePushNotifications() {
+  const swReg = await registerServiceWorker();
+  if (!swReg) return false;
+
+  const granted = await requestNotificationPermission();
+  if (!granted) return false;
+
+  const subscription = await subscribeUserToPush();
+  if (!subscription) return false;
+
+  const saved = await saveSubscriptionToServer(subscription);
+  if (!saved) return false;
+
+  alert("通知登録が完了しました。");
+  return true;
+}
+
+/**
+ * テスト通知送信
+ */
+export async function sendTestNotification() {
+  try {
+    const response = await fetch(`${PUSH_WORKER_URL}/send-test`, {
+      method: "POST",
+    });
+
+    const data = await response.json();
+    console.log("テスト通知レスポンス:", data);
+
+    if (!response.ok) {
+      throw new Error(data.error || "テスト通知送信に失敗しました");
+    }
+
+    alert("テスト通知を送信しました。");
+    return true;
+  } catch (error) {
+    console.error("テスト通知送信失敗:", error);
+    alert("テスト通知の送信に失敗しました。");
+    return false;
+  }
 }
