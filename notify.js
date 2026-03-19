@@ -1,18 +1,14 @@
-const PUSH_WORKER_URL = "https://stone-push-worker.its-brg77.workers.dev";
+const PUSH_WORKER_URL = "https://stone-push-test.its-brg77.workers.dev";
 
-/**
- * Cloudflare Workerに設定した公開VAPIDキーを入れてください
- * 例:
- * const PUBLIC_VAPID_KEY = "BEXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
- */
-const PUBLIC_VAPID_KEY = "ここに公開VAPIDキーを入れる";
+// ここはあとで公開VAPIDキーに置き換える
+const PUBLIC_VAPID_KEY = "REPLACE_PUBLIC_VAPID_KEY";
 
-/**
- * Base64URL → Uint8Array
- */
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const base64 = (base64String + padding)
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
 
@@ -23,10 +19,7 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-/**
- * Service Worker登録
- */
-export async function registerServiceWorker() {
+async function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) {
     alert("このブラウザはService Workerに対応していません。");
     return null;
@@ -43,10 +36,7 @@ export async function registerServiceWorker() {
   }
 }
 
-/**
- * 通知許可を取得
- */
-export async function requestNotificationPermission() {
+async function requestNotificationPermission() {
   if (!("Notification" in window)) {
     alert("このブラウザは通知に対応していません。");
     return false;
@@ -55,17 +45,14 @@ export async function requestNotificationPermission() {
   const permission = await Notification.requestPermission();
 
   if (permission !== "granted") {
-    alert("通知が許可されませんでした。ブラウザ設定から許可してください。");
+    alert("通知が許可されませんでした。");
     return false;
   }
 
   return true;
 }
 
-/**
- * Push購読を取得または新規作成
- */
-export async function subscribeUserToPush() {
+async function subscribeUserToPush() {
   const registration = await navigator.serviceWorker.ready;
 
   let subscription = await registration.pushManager.getSubscription();
@@ -81,7 +68,7 @@ export async function subscribeUserToPush() {
       applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY),
     });
 
-    console.log("新規購読成功:", subscription);
+    console.log("Push購読成功:", subscription);
     return subscription;
   } catch (error) {
     console.error("Push購読失敗:", error);
@@ -90,10 +77,7 @@ export async function subscribeUserToPush() {
   }
 }
 
-/**
- * Workerへ購読情報を送信して保存
- */
-export async function saveSubscriptionToServer(subscription) {
+async function saveSubscriptionToServer(subscription) {
   try {
     const response = await fetch(`${PUSH_WORKER_URL}/subscribe`, {
       method: "POST",
@@ -104,10 +88,10 @@ export async function saveSubscriptionToServer(subscription) {
     });
 
     const data = await response.json();
-    console.log("購読保存レスポンス:", data);
+    console.log("保存レスポンス:", data);
 
     if (!response.ok) {
-      throw new Error(data.error || "購読保存に失敗しました");
+      throw new Error(data.error || "購読情報の保存に失敗しました");
     }
 
     return true;
@@ -118,47 +102,18 @@ export async function saveSubscriptionToServer(subscription) {
   }
 }
 
-/**
- * 通知登録を全部まとめて実行
- */
 export async function enablePushNotifications() {
   const swReg = await registerServiceWorker();
-  if (!swReg) return false;
+  if (!swReg) return;
 
   const granted = await requestNotificationPermission();
-  if (!granted) return false;
+  if (!granted) return;
 
   const subscription = await subscribeUserToPush();
-  if (!subscription) return false;
+  if (!subscription) return;
 
   const saved = await saveSubscriptionToServer(subscription);
-  if (!saved) return false;
+  if (!saved) return;
 
   alert("通知登録が完了しました。");
-  return true;
-}
-
-/**
- * テスト通知送信
- */
-export async function sendTestNotification() {
-  try {
-    const response = await fetch(`${PUSH_WORKER_URL}/send-test`, {
-      method: "POST",
-    });
-
-    const data = await response.json();
-    console.log("テスト通知レスポンス:", data);
-
-    if (!response.ok) {
-      throw new Error(data.error || "テスト通知送信に失敗しました");
-    }
-
-    alert("テスト通知を送信しました。");
-    return true;
-  } catch (error) {
-    console.error("テスト通知送信失敗:", error);
-    alert("テスト通知の送信に失敗しました。");
-    return false;
-  }
 }
