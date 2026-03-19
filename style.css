@@ -139,14 +139,15 @@ button {
   background: linear-gradient(180deg, var(--accent2) 0%, var(--accent) 100%);
   box-shadow: 0 12px 26px rgba(217, 74, 122, 0.3);
   transition: transform 0.15s ease, opacity 0.15s ease, filter 0.15s ease;
+  touch-action: manipulation;
 }
 
 button:hover {
-  filter: brightness(1.04);
+  filter: brightness(1.03);
 }
 
 button:active {
-  transform: translateY(1px);
+  transform: translateY(1px) scale(0.99);
 }
 
 button:disabled {
@@ -170,7 +171,8 @@ button:disabled {
 .result-area,
 .image-wrap,
 .recommended-wrap,
-.shop-wrap {
+.shop-wrap,
+.quick-menu-wrap {
   margin-top: 18px;
   padding: 16px;
   border-radius: 16px;
@@ -233,7 +235,8 @@ button:disabled {
   font-size: 1rem;
 }
 
-.recommended-wrap h3 {
+.recommended-wrap h3,
+.quick-menu-wrap h3 {
   margin: 0 0 12px;
   font-size: 1.05rem;
   color: #fff;
@@ -264,6 +267,47 @@ button:disabled {
   line-height: 1.7;
 }
 
+/* ワンタップメニュー */
+.quick-menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.quick-btn {
+  flex: 1 1 calc(50% - 10px);
+  min-width: 120px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.quick-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.quick-btn:active {
+  transform: scale(0.97);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.quick-btn:focus {
+  outline: none;
+  border-color: rgba(240, 109, 151, 0.65);
+  box-shadow: 0 0 0 3px rgba(240, 109, 151, 0.14);
+}
+
 .shop-wrap {
   text-align: center;
 }
@@ -281,8 +325,8 @@ button:disabled {
   font-weight: 700;
   padding: 10px 16px;
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(240, 109, 151, 0.22) 0%, rgba(217, 74, 122, 0.22) 100%);
-  border: 1px solid rgba(240, 109, 151, 0.32);
+  background: rgba(240, 109, 151, 0.12);
+  border: 1px solid rgba(240, 109, 151, 0.26);
   transition: transform 0.15s ease, opacity 0.15s ease, filter 0.15s ease;
 }
 
@@ -342,13 +386,21 @@ hr {
   .result-area,
   .image-wrap,
   .recommended-wrap,
-  .shop-wrap {
+  .shop-wrap,
+  .quick-menu-wrap {
     padding: 14px;
     border-radius: 14px;
   }
 
   .recommended-item {
     padding: 11px 12px;
+  }
+
+  .quick-btn {
+    flex: 1 1 100%;
+    min-width: 100%;
+    padding: 12px;
+    font-size: 0.94rem;
   }
 
   #result-text {
