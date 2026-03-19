@@ -58,7 +58,6 @@ img {
   max-width: 920px;
   margin: 0 auto;
   padding: 30px 16px 60px;
-  width: 100%;
 }
 
 .hero {
@@ -75,8 +74,6 @@ img {
   font-size: 0.9rem;
   margin-bottom: 14px;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  max-width: 100%;
-  word-break: break-word;
 }
 
 .hero h1 {
@@ -90,7 +87,6 @@ img {
   margin: 0;
   line-height: 1.9;
   color: var(--subtext);
-  word-break: break-word;
 }
 
 .card {
@@ -102,7 +98,6 @@ img {
   backdrop-filter: blur(8px);
   margin-bottom: 18px;
   overflow: hidden;
-  width: 100%;
 }
 
 .field {
@@ -143,21 +138,22 @@ textarea:focus {
 
 button {
   width: 100%;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 15px;
   padding: 15px 18px;
   font-size: 1rem;
   font-weight: 700;
   color: #fff;
   cursor: pointer;
-  background: #1a1f3a;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-  transition: transform 0.15s ease, opacity 0.15s ease, filter 0.15s ease;
+  background: rgba(240, 109, 151, 0.08);
+  box-shadow: 0 8px 18px rgba(240, 109, 151, 0.12);
+  transition: transform 0.15s ease, opacity 0.15s ease, filter 0.15s ease, background 0.15s ease;
   touch-action: manipulation;
 }
 
 button:hover {
-  filter: brightness(1.05);
+  background: rgba(240, 109, 151, 0.14);
+  filter: brightness(1.03);
 }
 
 button:active {
@@ -171,7 +167,6 @@ button:disabled {
 
 .tarot-buttons {
   display: grid;
-  grid-template-columns: 1fr;
   gap: 10px;
 }
 
@@ -200,7 +195,6 @@ button:disabled {
   color: var(--subtext);
   line-height: 1.8;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  width: 100%;
   max-width: 100%;
   overflow: hidden;
 }
@@ -264,7 +258,6 @@ button:disabled {
   margin: 0 0 12px;
   font-size: 1.05rem;
   color: #fff;
-  word-break: break-word;
 }
 
 .recommended-list {
@@ -320,8 +313,6 @@ button:disabled {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  max-width: 100%;
-  word-break: break-word;
 }
 
 .quick-btn:hover {
@@ -348,7 +339,6 @@ button:disabled {
   font-weight: 700;
   color: var(--soft);
   margin-bottom: 8px;
-  word-break: break-word;
 }
 
 .shop-link {
@@ -361,8 +351,6 @@ button:disabled {
   background: rgba(240, 109, 151, 0.12);
   border: 1px solid rgba(240, 109, 151, 0.26);
   transition: transform 0.15s ease, opacity 0.15s ease, filter 0.15s ease;
-  max-width: 100%;
-  word-break: break-word;
 }
 
 .shop-link:hover {
