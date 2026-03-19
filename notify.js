@@ -1,6 +1,4 @@
 const PUSH_WORKER_URL = "https://stone-push-test.its-brg77.workers.dev";
-
-// ここはあとで公開VAPIDキーに置き換える
 const PUBLIC_VAPID_KEY = "BFfcC7aBaP0zxK6HtOUdiq6wW0jgAtsWJFleGclsliDEi3nwwFmD8n9pLzpcuFfguTpUvFzFNu41LIGKh7gnpNc";
 
 function urlBase64ToUint8Array(base64String) {
@@ -102,7 +100,7 @@ async function saveSubscriptionToServer(subscription) {
   }
 }
 
-export async function enablePushNotifications() {
+async function enablePush() {
   const swReg = await registerServiceWorker();
   if (!swReg) return;
 
@@ -117,3 +115,5 @@ export async function enablePushNotifications() {
 
   alert("通知登録が完了しました。");
 }
+
+window.enablePush = enablePush;
