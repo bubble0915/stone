@@ -21,9 +21,16 @@ let shopLink = document.getElementById("shop-link");
 const PLAN_STORAGE_KEY = "stone_user_plan";
 const USER_ID_STORAGE_KEY = "stone_user_id";
 
+const currentPlanLabel = document.getElementById("current-plan-label");
+const currentPlanDesc = document.getElementById("current-plan-desc");
+const planLimitGuide = document.getElementById("plan-limit-guide");
+const upgradeButton = document.getElementById("upgrade-button");
+const planButtons = document.querySelectorAll(".plan-btn");
+
 ensureExtraElements();
 ensureUserId();
 syncPlanFromUrl();
+renderPlanUi();
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -61,6 +68,7 @@ form.addEventListener("submit", async (e) => {
     renderRecommendedStones(data.recommended_stones || []);
     renderImages(data);
     renderShop(data.shop_url);
+    renderPlanUi();
   } catch (error) {
     console.error(error);
     showError("通信が止まってしまいました。少し時間をおいて、もう一度お試しください。");
@@ -68,6 +76,21 @@ form.addEventListener("submit", async (e) => {
     setLoadingState(false);
   }
 });
+
+planButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const plan = btn.getAttribute("data-plan") || "free";
+    setCurrentPlan(plan);
+    renderPlanUi();
+  });
+});
+
+if (upgradeButton) {
+  upgradeButton.addEventListener("click", () => {
+    const currentPlan = getCurrentPlan();
+    alert(getUpgradeMessage(currentPlan));
+  });
+}
 
 async function postWithTimeout(url, body, timeoutMs = 90000) {
   const controller = new AbortController();
@@ -266,6 +289,99 @@ function getPlanLabel(plan) {
   }
 }
 
+function getPlanDescription(plan) {
+  switch (normalizePlan(plan)) {
+    case "standard_980":
+      return "毎日しっかり使いたい方向けの基本プランです。";
+    case "premium_2980":
+      return "たくさん使いたい方向けの上位プランです。";
+    case "professional_9800":
+      return "占い師さん・ショップ運用を想定した業務向けプランです。";
+    case "free":
+    default:
+      return "まずは無料でお試しいただけます。";
+  }
+}
+
+function getPlanLimitText(plan) {
+  switch (normalizePlan(plan)) {
+    case "standard_980":
+      return "980円プラン：診断20回 / タロット20回 / 石画像5回 / タロット画像5回";
+    case "premium_2980":
+      return "2980円プラン：診断100回 / タロット100回 / 石画像20回 / タロット画像20回";
+    case "professional_9800":
+      return "9800円プラン：実質無制限 / 業務利用向け";
+    case "free":
+    default:
+      return "無料プラン：診断3回 / タロット3回 / 石画像1回 / タロット画像1回";
+  }
+}
+
+function getUpgradeMessage(plan) {
+  switch (normalizePlan(plan)) {
+    case "free":
+      return [
+        "現在は無料プランです。",
+        "",
+        "・980円プラン：日常使い向け",
+        "・2980円プラン：ヘビーユーザー向け",
+        "・9800円プラン：占い師さん・ショップ向け",
+        "",
+        "本番版ではここをGoogle Play課金に接続します。"
+      ].join("\n");
+    case "standard_980":
+      return [
+        "現在は980円プランです。",
+        "",
+        "さらに使いたい場合は",
+        "・2980円プラン",
+        "・9800円プロフェッショナルプラン",
+        "をご検討ください。",
+        "",
+        "本番版ではここをGoogle Play課金に接続します。"
+      ].join("\n");
+    case "premium_2980":
+      return [
+        "現在は2980円プランです。",
+        "",
+        "業務向けで使う場合は",
+        "・9800円プロフェッショナルプラン",
+        "がおすすめです。",
+        "",
+        "本番版ではここをGoogle Play課金に接続します。"
+      ].join("\n");
+    case "professional_9800":
+      return [
+        "現在はプロフェッショナルプランです。",
+        "",
+        "このプランは最上位プランです。"
+      ].join("\n");
+    default:
+      return "プラン案内を表示できませんでした。";
+  }
+}
+
+function renderPlanUi() {
+  const plan = getCurrentPlan();
+
+  if (currentPlanLabel) {
+    currentPlanLabel.textContent = getPlanLabel(plan);
+  }
+
+  if (currentPlanDesc) {
+    currentPlanDesc.textContent = getPlanDescription(plan);
+  }
+
+  if (planLimitGuide) {
+    planLimitGuide.textContent = getPlanLimitText(plan);
+  }
+
+  planButtons.forEach((btn) => {
+    const btnPlan = btn.getAttribute("data-plan") || "free";
+    btn.classList.toggle("active", normalizePlan(btnPlan) === plan);
+  });
+}
+
 function ensureExtraElements() {
   const resultCard = document.querySelector(".result-card");
 
@@ -359,8 +475,7 @@ function syncPlanFromUrl() {
 
   if (!urlPlan) return;
 
-  const normalized = setCurrentPlan(urlPlan);
-  console.log("plan set from url:", normalized);
+  setCurrentPlan(urlPlan);
 }
 
 function ensureUserId() {
@@ -386,5 +501,9 @@ function createSimpleUserId() {
 
 window.stoneApp = window.stoneApp || {};
 window.stoneApp.getCurrentPlan = getCurrentPlan;
-window.stoneApp.setCurrentPlan = setCurrentPlan;
+window.stoneApp.setCurrentPlan = (plan) => {
+  const normalized = setCurrentPlan(plan);
+  renderPlanUi();
+  return normalized;
+};
 window.stoneApp.getUserId = getOrCreateUserId;
