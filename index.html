@@ -5,6 +5,104 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>石のつぶやきAI</title>
   <link rel="stylesheet" href="style.css?v=21" />
+  <style>
+    .plan-card {
+      margin-bottom: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(8px);
+    }
+
+    .plan-card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .plan-current {
+      margin-bottom: 12px;
+      font-size: 14px;
+      line-height: 1.7;
+      opacity: 0.95;
+    }
+
+    .plan-current strong {
+      font-size: 16px;
+    }
+
+    .plan-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .plan-btn {
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      border-radius: 14px;
+      padding: 12px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1.5;
+      transition: 0.2s ease;
+    }
+
+    .plan-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.10);
+    }
+
+    .plan-btn.active {
+      border-color: rgba(120, 190, 255, 0.9);
+      background: rgba(120, 190, 255, 0.18);
+      box-shadow: 0 0 0 1px rgba(120, 190, 255, 0.25) inset;
+    }
+
+    .plan-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .plan-link-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .plan-note {
+      margin-top: 10px;
+      font-size: 12px;
+      opacity: 0.8;
+      line-height: 1.6;
+    }
+
+    .limit-guide {
+      margin-top: 10px;
+      font-size: 13px;
+      line-height: 1.7;
+      opacity: 0.92;
+    }
+
+    @media (max-width: 640px) {
+      .plan-buttons {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="bg-glow"></div>
@@ -19,6 +117,53 @@
         タロットは補助診断として使えます。結果に合わせた画像も表示します。
       </p>
     </header>
+
+    <section class="card plan-card">
+      <h3>ご利用プラン</h3>
+
+      <div class="plan-current">
+        現在のプラン：<strong id="current-plan-label">無料プラン</strong><br>
+        <span id="current-plan-desc">まずは無料でお試しいただけます。</span>
+
+        <div class="limit-guide" id="plan-limit-guide">
+          無料プラン：診断3回 / タロット3回 / 石画像1回 / タロット画像1回
+        </div>
+      </div>
+
+      <div class="plan-buttons">
+        <button type="button" class="plan-btn" data-plan="free">
+          無料プラン<br>
+          お試し利用
+        </button>
+
+        <button type="button" class="plan-btn" data-plan="standard_980">
+          980円プラン<br>
+          日常使い向け
+        </button>
+
+        <button type="button" class="plan-btn" data-plan="premium_2980">
+          2980円プラン<br>
+          ヘビーユーザー向け
+        </button>
+
+        <button type="button" class="plan-btn" data-plan="professional_9800">
+          9800円プラン<br>
+          占い師・ショップ向け
+        </button>
+      </div>
+
+      <div class="plan-actions">
+        <button type="button" id="upgrade-button" class="plan-link-btn">アップグレード案内を見る</button>
+        <a id="shop-plan-link" class="plan-link-btn" href="https://brgholdgs.base.shop" target="_blank" rel="noopener noreferrer">
+          ショップを見る
+        </a>
+      </div>
+
+      <div class="plan-note">
+        現在は販売前の確認版です。今は画面上でプラン切替の動作確認ができます。<br>
+        本番では Google Play 課金と連携して、自動でプランが反映される形にします。
+      </div>
+    </section>
 
     <section class="card input-card">
       <form id="stone-form">
@@ -80,7 +225,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=21"></script>
+  <script src="app.js?v=22"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const input = document.getElementById("user-input");
