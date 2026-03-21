@@ -91,6 +91,124 @@ a {
   margin-bottom: 18px;
 }
 
+/* プラン表示 */
+.plan-card {
+  margin-bottom: 18px;
+}
+
+.plan-card h3 {
+  margin: 0 0 12px;
+  font-size: 1.08rem;
+  color: #fff;
+}
+
+.plan-current {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--result);
+  color: var(--subtext);
+  line-height: 1.8;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.plan-current strong {
+  color: #fff;
+  font-size: 1rem;
+}
+
+.plan-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.plan-btn {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 13px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  box-shadow: none;
+}
+
+.plan-btn:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.22);
+  filter: none;
+}
+
+.plan-btn:active {
+  transform: scale(0.98);
+}
+
+.plan-btn:focus {
+  outline: none;
+  border-color: rgba(240, 109, 151, 0.65);
+  box-shadow: 0 0 0 3px rgba(240, 109, 151, 0.14);
+}
+
+.plan-btn.active {
+  border-color: rgba(240, 109, 151, 0.85);
+  background: rgba(240, 109, 151, 0.16);
+  box-shadow: 0 0 0 1px rgba(240, 109, 151, 0.22) inset;
+}
+
+.plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.plan-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 700;
+  background: rgba(240, 109, 151, 0.12);
+  border: 1px solid rgba(240, 109, 151, 0.26);
+  transition: transform 0.15s ease, opacity 0.15s ease, filter 0.15s ease, background 0.15s ease;
+  cursor: pointer;
+}
+
+.plan-link-btn:hover {
+  filter: brightness(1.05);
+}
+
+.plan-link-btn:active {
+  transform: translateY(1px);
+}
+
+.plan-note {
+  margin-top: 14px;
+  font-size: 0.88rem;
+  color: var(--subtext);
+  line-height: 1.7;
+}
+
+.limit-guide {
+  margin-top: 10px;
+  font-size: 0.93rem;
+  line-height: 1.7;
+  color: var(--soft);
+}
+
 .field {
   margin-bottom: 18px;
 }
@@ -289,11 +407,13 @@ button:disabled {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  box-shadow: none;
 }
 
 .quick-btn:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.22);
+  filter: none;
 }
 
 .quick-btn:active {
@@ -379,6 +499,18 @@ hr {
     padding: 14px 16px;
   }
 
+  .plan-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-actions {
+    flex-direction: column;
+  }
+
+  .plan-link-btn {
+    width: 100%;
+  }
+
   .loading,
   .empty-state,
   .result-meta,
@@ -386,7 +518,8 @@ hr {
   .image-wrap,
   .recommended-wrap,
   .shop-wrap,
-  .quick-menu-wrap {
+  .quick-menu-wrap,
+  .plan-current {
     padding: 14px;
     border-radius: 14px;
   }
