@@ -1,12 +1,6 @@
 const WORKER_URL = "https://stone-01.its-brg77.workers.dev";
 const BILLING_URL = "https://stone-billing.its-brg77.workers.dev";
 
-const PRICE_IDS = {
-  standard_980: "price_1TDGdCGZvoTS1v1DlAkALz14",
-  premium_2980: "price_1TDGfEGZvoTS1v1DM4XCVhU1",
-  professional_9800: "price_1TDGgoGZvoTS1v1DMsrPGtdk"
-};
-
 const form = document.getElementById("stone-form");
 const userInput = document.getElementById("user-input");
 const button = document.getElementById("send-button");
@@ -25,8 +19,8 @@ let recommendedList = document.getElementById("recommended-list");
 let shopWrap = document.getElementById("shop-wrap");
 let shopLink = document.getElementById("shop-link");
 
-const PLAN_STORAGE_KEY = "stone_user_plan";
 const USER_ID_STORAGE_KEY = "stone_user_id";
+const PLAN_STORAGE_KEY = "stone_user_plan";
 
 const currentPlanLabel = document.getElementById("current-plan-label");
 const currentPlanDesc = document.getElementById("current-plan-desc");
@@ -36,9 +30,11 @@ const planButtons = document.querySelectorAll(".plan-btn");
 
 ensureExtraElements();
 ensureUserId();
-syncPlanFromUrl();
-syncPlanFromPaymentResult();
-renderPlanUi();
+
+window.addEventListener("DOMContentLoaded", async () => {
+  await syncPlanFromServer();
+  renderPlanUi();
+});
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -53,6 +49,8 @@ form.addEventListener("submit", async (e) => {
   resetView();
 
   try {
+    await syncPlanFromServer();
+
     const currentPlan = getCurrentPlan();
     const userId = getOrCreateUserId();
 
@@ -60,8 +58,8 @@ form.addEventListener("submit", async (e) => {
       WORKER_URL,
       {
         input,
-        plan: currentPlan,
-        user_id: userId
+        user_id: userId,
+        plan: currentPlan
       },
       90000
     );
@@ -76,7 +74,11 @@ form.addEventListener("submit", async (e) => {
     renderRecommendedStones(data.recommended_stones || []);
     renderImages(data);
     renderShop(data.shop_url);
-    renderPlanUi();
+
+    if (data.plan) {
+      setCurrentPlan(data.plan);
+      renderPlanUi();
+    }
   } catch (error) {
     console.error(error);
     showError("通信が止まってしまいました。少し時間をおいて、もう一度お試しください。");
@@ -94,8 +96,7 @@ planButtons.forEach((btn) => {
 
 if (upgradeButton) {
   upgradeButton.addEventListener("click", () => {
-    const currentPlan = getCurrentPlan();
-    alert(getUpgradeMessage(currentPlan));
+    alert(getUpgradeMessage(getCurrentPlan()));
   });
 }
 
@@ -105,20 +106,15 @@ async function subscribe(plan) {
   if (normalizedPlan === "free") {
     setCurrentPlan("free");
     renderPlanUi();
-    alert("無料プランに切り替えました。");
+    alert("無料プランです。");
     return;
   }
 
-  const priceId = PRICE_IDS[normalizedPlan];
-  if (!priceId) {
-    alert("このプランはまだ準備中です。");
-    return;
-  }
+  const userId = getOrCreateUserId();
 
   try {
     const successUrl = new URL(window.location.href);
     successUrl.searchParams.set("payment", "success");
-    successUrl.searchParams.set("plan", normalizedPlan);
 
     const cancelUrl = new URL(window.location.href);
     cancelUrl.searchParams.set("payment", "cancel");
@@ -129,7 +125,8 @@ async function subscribe(plan) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        priceId,
+        plan: normalizedPlan,
+        userId,
         successUrl: successUrl.toString(),
         cancelUrl: cancelUrl.toString()
       })
@@ -146,6 +143,46 @@ async function subscribe(plan) {
   } catch (error) {
     console.error(error);
     alert("決済ページへの接続に失敗しました。");
+  }
+}
+
+async function syncPlanFromServer() {
+  const userId = getOrCreateUserId();
+
+  try {
+    const response = await fetch(`${BILLING_URL}/subscription-status`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ userId })
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (data?.ok && data.plan) {
+      setCurrentPlan(data.plan);
+    }
+
+    handlePaymentNotice();
+  } catch (error) {
+    console.error("subscription-status error:", error);
+  }
+}
+
+function handlePaymentNotice() {
+  const url = new URL(window.location.href);
+  const payment = url.searchParams.get("payment");
+
+  if (payment === "success") {
+    alert("決済が完了しました。プラン状態を確認しました。");
+    url.searchParams.delete("payment");
+    window.history.replaceState({}, "", url.toString());
+  }
+
+  if (payment === "cancel") {
+    alert("決済はキャンセルされました。");
+    url.searchParams.delete("payment");
+    window.history.replaceState({}, "", url.toString());
   }
 }
 
@@ -313,33 +350,22 @@ function showError(message) {
 
 function getModeLabel(mode) {
   switch (mode) {
-    case "stone":
-      return "石辞典モード";
-    case "feeling":
-      return "気持ち診断モード";
-    case "tarot_daily":
-      return "タロット：今日の運勢";
-    case "tarot_weekly":
-      return "タロット：今週の運勢";
-    case "tarot_love":
-      return "タロット：恋愛運";
-    case "tarot_general":
-      return "タロット：全体運";
-    case "tarot_three":
-      return "タロット：3枚引き";
-    default:
-      return "結果";
+    case "stone": return "石辞典モード";
+    case "feeling": return "気持ち診断モード";
+    case "tarot_daily": return "タロット：今日の運勢";
+    case "tarot_weekly": return "タロット：今週の運勢";
+    case "tarot_love": return "タロット：恋愛運";
+    case "tarot_general": return "タロット：全体運";
+    case "tarot_three": return "タロット：3枚引き";
+    default: return "結果";
   }
 }
 
 function getPlanLabel(plan) {
   switch (normalizePlan(plan)) {
-    case "standard_980":
-      return "スタンダード 980円";
-    case "premium_2980":
-      return "プレミアム 2980円";
-    case "professional_9800":
-      return "プロフェッショナル 9800円";
+    case "standard_980": return "スタンダード 980円";
+    case "premium_2980": return "プレミアム 2980円";
+    case "professional_9800": return "プロフェッショナル 9800円";
     case "free":
     default:
       return "無料プラン";
@@ -348,12 +374,9 @@ function getPlanLabel(plan) {
 
 function getPlanDescription(plan) {
   switch (normalizePlan(plan)) {
-    case "standard_980":
-      return "毎日しっかり使いたい方向けの基本プランです。";
-    case "premium_2980":
-      return "たくさん使いたい方向けの上位プランです。";
-    case "professional_9800":
-      return "占い師さん・ショップ運用を想定した業務向けプランです。";
+    case "standard_980": return "毎日しっかり使いたい方向けの基本プランです。";
+    case "premium_2980": return "たくさん使いたい方向けの上位プランです。";
+    case "professional_9800": return "占い師さん・ショップ運用を想定した業務向けプランです。";
     case "free":
     default:
       return "まずは無料でお試しいただけます。";
@@ -417,17 +440,9 @@ function getUpgradeMessage(plan) {
 function renderPlanUi() {
   const plan = getCurrentPlan();
 
-  if (currentPlanLabel) {
-    currentPlanLabel.textContent = getPlanLabel(plan);
-  }
-
-  if (currentPlanDesc) {
-    currentPlanDesc.textContent = getPlanDescription(plan);
-  }
-
-  if (planLimitGuide) {
-    planLimitGuide.textContent = getPlanLimitText(plan);
-  }
+  if (currentPlanLabel) currentPlanLabel.textContent = getPlanLabel(plan);
+  if (currentPlanDesc) currentPlanDesc.textContent = getPlanDescription(plan);
+  if (planLimitGuide) planLimitGuide.textContent = getPlanLimitText(plan);
 
   planButtons.forEach((btn) => {
     const btnPlan = btn.getAttribute("data-plan") || "free";
@@ -510,8 +525,7 @@ function normalizePlan(rawPlan) {
 }
 
 function getCurrentPlan() {
-  const stored = localStorage.getItem(PLAN_STORAGE_KEY);
-  return normalizePlan(stored || "free");
+  return normalizePlan(localStorage.getItem(PLAN_STORAGE_KEY) || "free");
 }
 
 function setCurrentPlan(plan) {
@@ -520,48 +534,16 @@ function setCurrentPlan(plan) {
   return normalized;
 }
 
-function syncPlanFromUrl() {
-  const url = new URL(window.location.href);
-  const urlPlan = url.searchParams.get("plan");
-
-  if (!urlPlan) return;
-
-  setCurrentPlan(urlPlan);
-}
-
-function syncPlanFromPaymentResult() {
-  const url = new URL(window.location.href);
-  const payment = url.searchParams.get("payment");
-  const plan = url.searchParams.get("plan");
-
-  if (payment === "success" && plan) {
-    setCurrentPlan(plan);
-    alert(`決済が完了しました。現在のプランは「${getPlanLabel(plan)}」です。`);
-    url.searchParams.delete("payment");
-    url.searchParams.delete("plan");
-    window.history.replaceState({}, "", url.toString());
-    return;
-  }
-
-  if (payment === "cancel") {
-    alert("決済はキャンセルされました。");
-    url.searchParams.delete("payment");
-    window.history.replaceState({}, "", url.toString());
-  }
-}
-
 function ensureUserId() {
   getOrCreateUserId();
 }
 
 function getOrCreateUserId() {
   let userId = localStorage.getItem(USER_ID_STORAGE_KEY);
-
   if (!userId) {
     userId = createSimpleUserId();
     localStorage.setItem(USER_ID_STORAGE_KEY, userId);
   }
-
   return userId;
 }
 
@@ -570,13 +552,3 @@ function createSimpleUserId() {
   const timePart = Date.now().toString(36);
   return `stone_${timePart}_${randomPart}`;
 }
-
-window.stoneApp = window.stoneApp || {};
-window.stoneApp.getCurrentPlan = getCurrentPlan;
-window.stoneApp.setCurrentPlan = (plan) => {
-  const normalized = setCurrentPlan(plan);
-  renderPlanUi();
-  return normalized;
-};
-window.stoneApp.getUserId = getOrCreateUserId;
-window.stoneApp.subscribe = subscribe;
