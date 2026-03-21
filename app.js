@@ -1,4 +1,11 @@
 const WORKER_URL = "https://stone-01.its-brg77.workers.dev";
+const BILLING_URL = "https://stone-billing.its-brg77.workers.dev";
+
+const PRICE_IDS = {
+  standard_980: "price_1TDGdCGZvoTS1v1DlAkALz14",
+  premium_2980: "price_1TDGfEGZvoTS1v1DM4XCVhU1",
+  professional_9800: "price_1TDGgoGZvoTS1v1DMsrPGtdk"
+};
 
 const form = document.getElementById("stone-form");
 const userInput = document.getElementById("user-input");
@@ -30,6 +37,7 @@ const planButtons = document.querySelectorAll(".plan-btn");
 ensureExtraElements();
 ensureUserId();
 syncPlanFromUrl();
+syncPlanFromPaymentResult();
 renderPlanUi();
 
 form.addEventListener("submit", async (e) => {
@@ -78,10 +86,9 @@ form.addEventListener("submit", async (e) => {
 });
 
 planButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", async () => {
     const plan = btn.getAttribute("data-plan") || "free";
-    setCurrentPlan(plan);
-    renderPlanUi();
+    await subscribe(plan);
   });
 });
 
@@ -90,6 +97,56 @@ if (upgradeButton) {
     const currentPlan = getCurrentPlan();
     alert(getUpgradeMessage(currentPlan));
   });
+}
+
+async function subscribe(plan) {
+  const normalizedPlan = normalizePlan(plan);
+
+  if (normalizedPlan === "free") {
+    setCurrentPlan("free");
+    renderPlanUi();
+    alert("無料プランに切り替えました。");
+    return;
+  }
+
+  const priceId = PRICE_IDS[normalizedPlan];
+  if (!priceId) {
+    alert("このプランはまだ準備中です。");
+    return;
+  }
+
+  try {
+    const successUrl = new URL(window.location.href);
+    successUrl.searchParams.set("payment", "success");
+    successUrl.searchParams.set("plan", normalizedPlan);
+
+    const cancelUrl = new URL(window.location.href);
+    cancelUrl.searchParams.set("payment", "cancel");
+
+    const response = await fetch(`${BILLING_URL}/create-checkout-session`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        priceId,
+        successUrl: successUrl.toString(),
+        cancelUrl: cancelUrl.toString()
+      })
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data?.ok || !data?.url) {
+      alert(data?.error || "決済ページの作成に失敗しました。");
+      return;
+    }
+
+    window.location.href = data.url;
+  } catch (error) {
+    console.error(error);
+    alert("決済ページへの接続に失敗しました。");
+  }
 }
 
 async function postWithTimeout(url, body, timeoutMs = 90000) {
@@ -327,7 +384,7 @@ function getUpgradeMessage(plan) {
         "・2980円プラン：ヘビーユーザー向け",
         "・9800円プラン：占い師さん・ショップ向け",
         "",
-        "本番版ではここをGoogle Play課金に接続します。"
+        "有料プランはStripe決済ページへ進みます。"
       ].join("\n");
     case "standard_980":
       return [
@@ -336,9 +393,7 @@ function getUpgradeMessage(plan) {
         "さらに使いたい場合は",
         "・2980円プラン",
         "・9800円プロフェッショナルプラン",
-        "をご検討ください。",
-        "",
-        "本番版ではここをGoogle Play課金に接続します。"
+        "をご検討ください。"
       ].join("\n");
     case "premium_2980":
       return [
@@ -346,9 +401,7 @@ function getUpgradeMessage(plan) {
         "",
         "業務向けで使う場合は",
         "・9800円プロフェッショナルプラン",
-        "がおすすめです。",
-        "",
-        "本番版ではここをGoogle Play課金に接続します。"
+        "がおすすめです。"
       ].join("\n");
     case "professional_9800":
       return [
@@ -449,9 +502,7 @@ function normalizePlan(rawPlan) {
   if (["free", "無料"].includes(value)) return "free";
   if (["standard", "standard_980", "980", "980円"].includes(value)) return "standard_980";
   if (["premium", "premium_2980", "2980", "2980円"].includes(value)) return "premium_2980";
-  if (
-    ["professional", "professional_9800", "pro", "9800", "9800円", "professional9800"].includes(value)
-  ) {
+  if (["professional", "professional_9800", "pro", "9800", "9800円", "professional9800"].includes(value)) {
     return "professional_9800";
   }
 
@@ -476,6 +527,27 @@ function syncPlanFromUrl() {
   if (!urlPlan) return;
 
   setCurrentPlan(urlPlan);
+}
+
+function syncPlanFromPaymentResult() {
+  const url = new URL(window.location.href);
+  const payment = url.searchParams.get("payment");
+  const plan = url.searchParams.get("plan");
+
+  if (payment === "success" && plan) {
+    setCurrentPlan(plan);
+    alert(`決済が完了しました。現在のプランは「${getPlanLabel(plan)}」です。`);
+    url.searchParams.delete("payment");
+    url.searchParams.delete("plan");
+    window.history.replaceState({}, "", url.toString());
+    return;
+  }
+
+  if (payment === "cancel") {
+    alert("決済はキャンセルされました。");
+    url.searchParams.delete("payment");
+    window.history.replaceState({}, "", url.toString());
+  }
 }
 
 function ensureUserId() {
@@ -507,3 +579,4 @@ window.stoneApp.setCurrentPlan = (plan) => {
   return normalized;
 };
 window.stoneApp.getUserId = getOrCreateUserId;
+window.stoneApp.subscribe = subscribe;
