@@ -18,7 +18,12 @@ let recommendedList = document.getElementById("recommended-list");
 let shopWrap = document.getElementById("shop-wrap");
 let shopLink = document.getElementById("shop-link");
 
+const PLAN_STORAGE_KEY = "stone_user_plan";
+const USER_ID_STORAGE_KEY = "stone_user_id";
+
 ensureExtraElements();
+ensureUserId();
+syncPlanFromUrl();
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -33,7 +38,18 @@ form.addEventListener("submit", async (e) => {
   resetView();
 
   try {
-    const data = await postWithTimeout(WORKER_URL, { input }, 90000);
+    const currentPlan = getCurrentPlan();
+    const userId = getOrCreateUserId();
+
+    const data = await postWithTimeout(
+      WORKER_URL,
+      {
+        input,
+        plan: currentPlan,
+        user_id: userId
+      },
+      90000
+    );
 
     if (!data || !data.ok) {
       showError(data?.error || "通信エラーが発生しました。");
@@ -106,25 +122,35 @@ function resetView() {
 
 function renderMeta(data) {
   const modeLabel = getModeLabel(data.mode);
+  const planLabel = getPlanLabel(data.plan);
 
   const parts = [
-    `<strong>${escapeHtml(modeLabel)}</strong>`
+    `<strong>${escapeHtml(modeLabel)}</strong>`,
+    `プラン: ${escapeHtml(planLabel)}`
   ];
 
   if (typeof data.remaining_text === "number") {
-    parts.push(`無料診断残り: ${data.remaining_text}回`);
+    parts.push(`診断残り: ${data.remaining_text}回`);
+  } else if (data.remaining_text === null) {
+    parts.push("診断残り: 無制限");
   }
 
   if (typeof data.remaining_tarot === "number") {
-    parts.push(`無料タロット残り: ${data.remaining_tarot}回`);
+    parts.push(`タロット残り: ${data.remaining_tarot}回`);
+  } else if (data.remaining_tarot === null) {
+    parts.push("タロット残り: 無制限");
   }
 
   if (typeof data.remaining_stone_image === "number") {
     parts.push(`石画像残り: ${data.remaining_stone_image}回`);
+  } else if (data.remaining_stone_image === null) {
+    parts.push("石画像残り: 無制限");
   }
 
   if (typeof data.remaining_tarot_image === "number") {
     parts.push(`タロット画像残り: ${data.remaining_tarot_image}回`);
+  } else if (data.remaining_tarot_image === null) {
+    parts.push("タロット画像残り: 無制限");
   }
 
   if (data.image_error) {
@@ -226,6 +252,20 @@ function getModeLabel(mode) {
   }
 }
 
+function getPlanLabel(plan) {
+  switch (normalizePlan(plan)) {
+    case "standard_980":
+      return "スタンダード 980円";
+    case "premium_2980":
+      return "プレミアム 2980円";
+    case "professional_9800":
+      return "プロフェッショナル 9800円";
+    case "free":
+    default:
+      return "無料プラン";
+  }
+}
+
 function ensureExtraElements() {
   const resultCard = document.querySelector(".result-card");
 
@@ -286,3 +326,65 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 }
+
+function normalizePlan(rawPlan) {
+  const value = String(rawPlan || "free").trim().toLowerCase();
+
+  if (["free", "無料"].includes(value)) return "free";
+  if (["standard", "standard_980", "980", "980円"].includes(value)) return "standard_980";
+  if (["premium", "premium_2980", "2980", "2980円"].includes(value)) return "premium_2980";
+  if (
+    ["professional", "professional_9800", "pro", "9800", "9800円", "professional9800"].includes(value)
+  ) {
+    return "professional_9800";
+  }
+
+  return "free";
+}
+
+function getCurrentPlan() {
+  const stored = localStorage.getItem(PLAN_STORAGE_KEY);
+  return normalizePlan(stored || "free");
+}
+
+function setCurrentPlan(plan) {
+  const normalized = normalizePlan(plan);
+  localStorage.setItem(PLAN_STORAGE_KEY, normalized);
+  return normalized;
+}
+
+function syncPlanFromUrl() {
+  const url = new URL(window.location.href);
+  const urlPlan = url.searchParams.get("plan");
+
+  if (!urlPlan) return;
+
+  const normalized = setCurrentPlan(urlPlan);
+  console.log("plan set from url:", normalized);
+}
+
+function ensureUserId() {
+  getOrCreateUserId();
+}
+
+function getOrCreateUserId() {
+  let userId = localStorage.getItem(USER_ID_STORAGE_KEY);
+
+  if (!userId) {
+    userId = createSimpleUserId();
+    localStorage.setItem(USER_ID_STORAGE_KEY, userId);
+  }
+
+  return userId;
+}
+
+function createSimpleUserId() {
+  const randomPart = Math.random().toString(36).slice(2, 12);
+  const timePart = Date.now().toString(36);
+  return `stone_${timePart}_${randomPart}`;
+}
+
+window.stoneApp = window.stoneApp || {};
+window.stoneApp.getCurrentPlan = getCurrentPlan;
+window.stoneApp.setCurrentPlan = setCurrentPlan;
+window.stoneApp.getUserId = getOrCreateUserId;
