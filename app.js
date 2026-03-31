@@ -363,20 +363,22 @@ function getModeLabel(mode) {
 
 function getPlanLabel(plan) {
   switch (normalizePlan(plan)) {
-    case "standard_980": return "スタンダード 980円";
-    case "premium_2980": return "プレミアム 2980円";
-    case "professional_9800": return "プロフェッショナル 9800円";
+    case "light_1980": return "ライト 1980円/月";
+    case "standard_3580": return "スタンダード 3580円/月";
+    case "premium_9800": return "プレミアム 9800円/月";
+    case "pro_15800": return "プロ 15800円/月";
     case "free":
     default:
-      return "無料プラン";
+      return "お試し 無料プラン";
   }
 }
 
 function getPlanDescription(plan) {
   switch (normalizePlan(plan)) {
-    case "standard_980": return "毎日しっかり使いたい方向けの基本プランです。";
-    case "premium_2980": return "たくさん使いたい方向けの上位プランです。";
-    case "professional_9800": return "占い師さん・ショップ運用を想定した業務向けプランです。";
+    case "light_1980": return "個人利用向けの使いやすいプランです。";
+    case "standard_3580": return "本格利用・ヘビーユーザー向けの拡張プランです。";
+    case "premium_9800": return "個人占い師・個人ショップ向けの上位プランです。";
+    case "pro_15800": return "業者・法人向けの最上位プランです。";
     case "free":
     default:
       return "まずは無料でお試しいただけます。";
@@ -385,15 +387,17 @@ function getPlanDescription(plan) {
 
 function getPlanLimitText(plan) {
   switch (normalizePlan(plan)) {
-    case "standard_980":
-      return "980円プラン：診断20回 / タロット20回 / 石画像5回 / タロット画像5回";
-    case "premium_2980":
-      return "2980円プラン：診断100回 / タロット100回 / 石画像20回 / タロット画像20回";
-    case "professional_9800":
-      return "9800円プラン：実質無制限 / 業務利用向け";
+    case "light_1980":
+      return "ライト：個人利用向け / 無料プランより多く利用可能";
+    case "standard_3580":
+      return "スタンダード：本格利用・ヘビーユーザー向け / 診断・画像生成・占い利用をさらに拡張";
+    case "premium_9800":
+      return "プレミアム：個人占い師・個人ショップ向け / 高頻度利用向け";
+    case "pro_15800":
+      return "プロ：業者・法人向け / 全機能向け・業務利用向け";
     case "free":
     default:
-      return "無料プラン：診断3回 / タロット3回 / 石画像1回 / タロット画像1回";
+      return "お試し：診断3回 / タロット3回 / 石画像1回 / タロット画像1回";
   }
 }
 
@@ -401,34 +405,46 @@ function getUpgradeMessage(plan) {
   switch (normalizePlan(plan)) {
     case "free":
       return [
-        "現在は無料プランです。",
+        "現在はお試し 無料プランです。",
         "",
-        "・980円プラン：日常使い向け",
-        "・2980円プラン：ヘビーユーザー向け",
-        "・9800円プラン：占い師さん・ショップ向け",
+        "ご利用いただけるプラン",
+        "・ライト 1980円/月：個人利用向け",
+        "・スタンダード 3580円/月：本格利用・ヘビーユーザー向け",
+        "・プレミアム 9800円/月：個人占い師・個人ショップ向け",
+        "・プロ 15800円/月：業者・法人向け",
         "",
-        "有料プランはStripe決済ページへ進みます。"
+        "ご希望のプランボタンからお進みください。"
       ].join("\n");
-    case "standard_980":
+    case "light_1980":
       return [
-        "現在は980円プランです。",
+        "現在はライト 1980円/月プランです。",
         "",
-        "さらに使いたい場合は",
-        "・2980円プラン",
-        "・9800円プロフェッショナルプラン",
+        "さらにご利用を広げたい場合は、",
+        "・スタンダード 3580円/月",
+        "・プレミアム 9800円/月",
+        "・プロ 15800円/月",
         "をご検討ください。"
       ].join("\n");
-    case "premium_2980":
+    case "standard_3580":
       return [
-        "現在は2980円プランです。",
+        "現在はスタンダード 3580円/月プランです。",
         "",
-        "業務向けで使う場合は",
-        "・9800円プロフェッショナルプラン",
+        "さらに上位のご利用をご希望の場合は、",
+        "・プレミアム 9800円/月",
+        "・プロ 15800円/月",
+        "をご検討ください。"
+      ].join("\n");
+    case "premium_9800":
+      return [
+        "現在はプレミアム 9800円/月プランです。",
+        "",
+        "業務利用・法人利用をご希望の場合は、",
+        "・プロ 15800円/月",
         "がおすすめです。"
       ].join("\n");
-    case "professional_9800":
+    case "pro_15800":
       return [
-        "現在はプロフェッショナルプランです。",
+        "現在はプロ 15800円/月プランです。",
         "",
         "このプランは最上位プランです。"
       ].join("\n");
@@ -514,11 +530,51 @@ function escapeHtml(value) {
 function normalizePlan(rawPlan) {
   const value = String(rawPlan || "free").trim().toLowerCase();
 
-  if (["free", "無料"].includes(value)) return "free";
-  if (["standard", "standard_980", "980", "980円"].includes(value)) return "standard_980";
-  if (["premium", "premium_2980", "2980", "2980円"].includes(value)) return "premium_2980";
-  if (["professional", "professional_9800", "pro", "9800", "9800円", "professional9800"].includes(value)) {
-    return "professional_9800";
+  if (["free", "無料", "お試し"].includes(value)) return "free";
+
+  if ([
+    "light",
+    "light_1980",
+    "1980",
+    "1980円",
+    "standard",
+    "standard_980",
+    "980",
+    "980円"
+  ].includes(value)) {
+    return "light_1980";
+  }
+
+  if ([
+    "standard_3580",
+    "3580",
+    "3580円",
+    "premium",
+    "premium_2980",
+    "2980",
+    "2980円"
+  ].includes(value)) {
+    return "standard_3580";
+  }
+
+  if ([
+    "premium_9800",
+    "9800",
+    "9800円",
+    "professional",
+    "professional_9800",
+    "professional9800"
+  ].includes(value)) {
+    return "premium_9800";
+  }
+
+  if ([
+    "pro",
+    "pro_15800",
+    "15800",
+    "15800円"
+  ].includes(value)) {
+    return "pro_15800";
   }
 
   return "free";
