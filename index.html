@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>石のつぶやきAI</title>
-  <link rel="stylesheet" href="style.css?v=31" />
+  <link rel="stylesheet" href="style.css?v=30" />
 </head>
 <body>
   <div class="bg-glow"></div>
@@ -60,14 +60,16 @@
       </div>
 
       <div class="plan-actions">
-        <button type="button" id="upgrade-button" class="plan-link-btn">アップグレード案内を見る</button>
+        <button type="button" id="upgrade-button" class="plan-link-btn">
+          プランの詳細・アップグレードはこちら
+        </button>
         <a id="shop-plan-link" class="plan-link-btn" href="https://brgholdgs.base.shop" target="_blank" rel="noopener noreferrer">
           ショップを見る
         </a>
       </div>
 
       <div class="plan-note">
-        有料プランはアプリ内課金対応後にご利用いただけます。
+        有料プランはアプリ内でご利用いただける予定です。
       </div>
     </section>
 
@@ -131,7 +133,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=31"></script>
+  <script src="app.js?v=30"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const input = document.getElementById("user-input");
@@ -142,8 +144,6 @@
       const planDesc = document.getElementById("current-plan-desc");
       const planLimitGuide = document.getElementById("plan-limit-guide");
 
-      // 仮のユーザーID
-      // 後でログイン機能や会員識別が入ったら、本物の userId に置き換えます
       const userId = "test-user-001";
 
       function updatePlanUI(data) {
