@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>石のつぶやきAI</title>
-  <link rel="stylesheet" href="style.css?v=30" />
+  <link rel="stylesheet" href="style.css?v=31" />
 </head>
 <body>
   <div class="bg-glow"></div>
@@ -34,23 +34,28 @@
 
       <div class="plan-buttons">
         <button type="button" class="plan-btn" data-plan="free">
-          無料プラン<br>
-          お試し利用
+          お試し<br>
+          無料プラン
         </button>
 
-        <button type="button" class="plan-btn" data-plan="standard_980">
-          980円プラン<br>
-          日常使い向け
+        <button type="button" class="plan-btn" data-plan="light_1980">
+          ライト 1980円/月<br>
+          個人利用向け
         </button>
 
-        <button type="button" class="plan-btn" data-plan="premium_2980">
-          2980円プラン<br>
-          ヘビーユーザー向け
+        <button type="button" class="plan-btn" data-plan="standard_3580">
+          スタンダード 3580円/月<br>
+          本格利用・ヘビーユーザー向け
         </button>
 
-        <button type="button" class="plan-btn" data-plan="professional_9800">
-          9800円プラン<br>
-          占い師・ショップ向け
+        <button type="button" class="plan-btn" data-plan="premium_9800">
+          プレミアム 9800円/月<br>
+          個人占い師・個人ショップ向け
+        </button>
+
+        <button type="button" class="plan-btn" data-plan="pro_15800">
+          プロ 15800円/月<br>
+          業者・法人向け
         </button>
       </div>
 
@@ -62,7 +67,7 @@
       </div>
 
       <div class="plan-note">
-        有料プランを押すと Stripe の決済ページへ進みます。
+        有料プランはアプリ内課金対応後にご利用いただけます。
       </div>
     </section>
 
@@ -126,7 +131,7 @@
     </section>
   </main>
 
-  <script src="app.js?v=30"></script>
+  <script src="app.js?v=31"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const input = document.getElementById("user-input");
@@ -150,30 +155,37 @@
         }
 
         if (!data.active || data.plan === "free") {
-          planLabel.textContent = "無料プラン";
+          planLabel.textContent = "お試し";
           planDesc.textContent = "まずは無料でお試しいただけます。";
-          planLimitGuide.textContent = "無料プラン：診断3回 / タロット3回 / 石画像1回 / タロット画像1回";
+          planLimitGuide.textContent = "お試し：診断3回 / タロット3回 / 石画像1回 / タロット画像1回";
           return;
         }
 
-        if (data.plan === "standard_980") {
-          planLabel.textContent = "980円プラン";
-          planDesc.textContent = "日常使い向けの標準プランです。";
-          planLimitGuide.textContent = "980円プラン：無料より多く利用可能 / 日常利用向け";
+        if (data.plan === "light_1980" || data.plan === "standard_980") {
+          planLabel.textContent = "ライト 1980円/月";
+          planDesc.textContent = "個人利用向けの使いやすいプランです。";
+          planLimitGuide.textContent = "ライト：無料プランより多く利用可能 / 個人利用向け";
           return;
         }
 
-        if (data.plan === "premium_2980") {
-          planLabel.textContent = "2980円プラン";
-          planDesc.textContent = "ヘビーユーザー向けの拡張プランです。";
-          planLimitGuide.textContent = "2980円プラン：画像生成・占い利用をさらに拡張";
+        if (data.plan === "standard_3580" || data.plan === "premium_2980") {
+          planLabel.textContent = "スタンダード 3580円/月";
+          planDesc.textContent = "本格利用・ヘビーユーザー向けの拡張プランです。";
+          planLimitGuide.textContent = "スタンダード：診断・画像生成・占い利用をさらに拡張";
           return;
         }
 
-        if (data.plan === "professional_9800") {
-          planLabel.textContent = "9800円プラン";
-          planDesc.textContent = "占い師・ショップ向けの最上位プランです。";
-          planLimitGuide.textContent = "9800円プラン：全機能向け / 業務利用・高頻度利用向け";
+        if (data.plan === "premium_9800" || data.plan === "professional_9800") {
+          planLabel.textContent = "プレミアム 9800円/月";
+          planDesc.textContent = "個人占い師・個人ショップ向けの上位プランです。";
+          planLimitGuide.textContent = "プレミアム：高頻度利用向け / 個人活動の本格運用向け";
+          return;
+        }
+
+        if (data.plan === "pro_15800") {
+          planLabel.textContent = "プロ 15800円/月";
+          planDesc.textContent = "業者・法人向けの最上位プランです。";
+          planLimitGuide.textContent = "プロ：全機能向け / 業務利用・法人運用向け";
           return;
         }
 
